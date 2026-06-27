@@ -11,7 +11,6 @@
 <body>
 <div id="root"></div>
 <script>
-import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
 const {
   useState,
   useMemo
@@ -690,15 +689,14 @@ const riskHex = r => r === "高" ? "#f43f5e" : r === "中" ? "#f59e0b" : "#10b98
 function Fixtures({
   space
 }) {
-  const L = (x, y, t) => /*#__PURE__*/_jsx("text", {
+  const L = (x, y, t) => /*#__PURE__*/React.createElement("text", {
     x: x,
     y: y,
     fontSize: "9",
     fill: "#78716c",
-    textAnchor: "middle",
-    children: t
-  });
-  const base = /*#__PURE__*/_jsx("rect", {
+    textAnchor: "middle"
+  }, t);
+  const base = /*#__PURE__*/React.createElement("rect", {
     x: "15",
     y: "20",
     width: "270",
@@ -708,211 +706,201 @@ function Fixtures({
     stroke: "#d6d3d1",
     strokeWidth: "1.5"
   });
-  if (space === "bath") return /*#__PURE__*/_jsxs("g", {
-    children: [base, /*#__PURE__*/_jsx("rect", {
-      x: "15",
-      y: "132",
-      width: "11",
-      height: "40",
-      fill: "#e7e5e4",
-      stroke: "#a8a29e"
-    }), L(40, 175, "門"), /*#__PURE__*/_jsx("rect", {
-      x: "192",
-      y: "103",
-      width: "44",
-      height: "52",
-      rx: "12",
-      fill: "#e0f2fe",
-      stroke: "#7dd3fc"
-    }), L(214, 175, "馬桶"), /*#__PURE__*/_jsx("rect", {
-      x: "60",
-      y: "56",
-      width: "60",
-      height: "26",
-      rx: "4",
-      fill: "#e0f2fe",
-      stroke: "#7dd3fc"
-    }), L(90, 50, "面盆"), /*#__PURE__*/_jsx("rect", {
-      x: "215",
-      y: "40",
-      width: "64",
-      height: "56",
-      rx: "4",
-      fill: "#ecfeff",
-      stroke: "#67e8f9",
-      strokeDasharray: "4 3"
-    }), L(247, 36, "淋浴")]
-  });
-  if (space === "bed") return /*#__PURE__*/_jsxs("g", {
-    children: [base, /*#__PURE__*/_jsx("rect", {
-      x: "70",
-      y: "118",
-      width: "120",
-      height: "62",
-      rx: "8",
-      fill: "#ede9fe",
-      stroke: "#c4b5fd"
-    }), L(130, 152, "床"), /*#__PURE__*/_jsx("rect", {
-      x: "120",
-      y: "22",
-      width: "72",
-      height: "11",
-      fill: "#e0f2fe",
-      stroke: "#7dd3fc"
-    }), L(156, 18, "窗"), /*#__PURE__*/_jsx("rect", {
-      x: "15",
-      y: "108",
-      width: "11",
-      height: "40",
-      fill: "#e7e5e4",
-      stroke: "#a8a29e"
-    }), L(40, 175, "門"), /*#__PURE__*/_jsx("rect", {
-      x: "200",
-      y: "116",
-      width: "32",
-      height: "30",
-      rx: "3",
-      fill: "#f5f5f4",
-      stroke: "#d6d3d1"
-    }), /*#__PURE__*/_jsx("rect", {
-      x: "246",
-      y: "70",
-      width: "9",
-      height: "40",
-      fill: "#e0f2fe",
-      stroke: "#7dd3fc"
-    }), L(250, 124, "鏡")]
-  });
-  if (space === "kit") return /*#__PURE__*/_jsxs("g", {
-    children: [base, /*#__PURE__*/_jsx("rect", {
-      x: "40",
-      y: "60",
-      width: "222",
-      height: "30",
-      rx: "4",
-      fill: "#f5f5f4",
-      stroke: "#d6d3d1"
-    }), L(150, 105, "流理台"), /*#__PURE__*/_jsx("rect", {
-      x: "160",
-      y: "62",
-      width: "40",
-      height: "26",
-      rx: "3",
-      fill: "#fee2e2",
-      stroke: "#fca5a5"
-    }), L(180, 100, "爐"), /*#__PURE__*/_jsx("rect", {
-      x: "62",
-      y: "40",
-      width: "90",
-      height: "16",
-      rx: "3",
-      fill: "#ede9fe",
-      stroke: "#c4b5fd"
-    }), L(107, 36, "櫥櫃")]
-  });
-  return /*#__PURE__*/_jsxs("g", {
-    children: [base, /*#__PURE__*/_jsx("rect", {
-      x: "55",
-      y: "112",
-      width: "92",
-      height: "42",
-      rx: "8",
-      fill: "#ede9fe",
-      stroke: "#c4b5fd"
-    }), L(101, 137, "沙發"), /*#__PURE__*/_jsx("rect", {
-      x: "60",
-      y: "55",
-      width: "55",
-      height: "9",
-      fill: "#44403c"
-    }), L(87, 50, "電視"), /*#__PURE__*/_jsx("rect", {
-      x: "138",
-      y: "22",
-      width: "60",
-      height: "11",
-      fill: "#e0f2fe",
-      stroke: "#7dd3fc"
-    }), L(168, 18, "窗"), /*#__PURE__*/_jsx("rect", {
-      x: "15",
-      y: "135",
-      width: "11",
-      height: "40",
-      fill: "#e7e5e4",
-      stroke: "#a8a29e"
-    }), L(40, 178, "門"), /*#__PURE__*/_jsx("rect", {
-      x: "118",
-      y: "144",
-      width: "52",
-      height: "20",
-      rx: "4",
-      fill: "#f5f5f4",
-      stroke: "#d6d3d1"
-    }), /*#__PURE__*/_jsx("rect", {
-      x: "248",
-      y: "150",
-      width: "38",
-      height: "12",
-      fill: "#f5f5f4",
-      stroke: "#d6d3d1"
-    }), /*#__PURE__*/_jsx("rect", {
-      x: "255",
-      y: "130",
-      width: "31",
-      height: "12",
-      fill: "#f5f5f4",
-      stroke: "#d6d3d1"
-    }), /*#__PURE__*/_jsx("rect", {
-      x: "262",
-      y: "110",
-      width: "24",
-      height: "12",
-      fill: "#f5f5f4",
-      stroke: "#d6d3d1"
-    }), /*#__PURE__*/_jsx("rect", {
-      x: "269",
-      y: "90",
-      width: "17",
-      height: "12",
-      fill: "#f5f5f4",
-      stroke: "#d6d3d1"
-    }), L(266, 78, "樓梯")]
-  });
+  if (space === "bath") return /*#__PURE__*/React.createElement("g", null, base, /*#__PURE__*/React.createElement("rect", {
+    x: "15",
+    y: "132",
+    width: "11",
+    height: "40",
+    fill: "#e7e5e4",
+    stroke: "#a8a29e"
+  }), L(40, 175, "門"), /*#__PURE__*/React.createElement("rect", {
+    x: "192",
+    y: "103",
+    width: "44",
+    height: "52",
+    rx: "12",
+    fill: "#e0f2fe",
+    stroke: "#7dd3fc"
+  }), L(214, 175, "馬桶"), /*#__PURE__*/React.createElement("rect", {
+    x: "60",
+    y: "56",
+    width: "60",
+    height: "26",
+    rx: "4",
+    fill: "#e0f2fe",
+    stroke: "#7dd3fc"
+  }), L(90, 50, "面盆"), /*#__PURE__*/React.createElement("rect", {
+    x: "215",
+    y: "40",
+    width: "64",
+    height: "56",
+    rx: "4",
+    fill: "#ecfeff",
+    stroke: "#67e8f9",
+    strokeDasharray: "4 3"
+  }), L(247, 36, "淋浴"));
+  if (space === "bed") return /*#__PURE__*/React.createElement("g", null, base, /*#__PURE__*/React.createElement("rect", {
+    x: "70",
+    y: "118",
+    width: "120",
+    height: "62",
+    rx: "8",
+    fill: "#ede9fe",
+    stroke: "#c4b5fd"
+  }), L(130, 152, "床"), /*#__PURE__*/React.createElement("rect", {
+    x: "120",
+    y: "22",
+    width: "72",
+    height: "11",
+    fill: "#e0f2fe",
+    stroke: "#7dd3fc"
+  }), L(156, 18, "窗"), /*#__PURE__*/React.createElement("rect", {
+    x: "15",
+    y: "108",
+    width: "11",
+    height: "40",
+    fill: "#e7e5e4",
+    stroke: "#a8a29e"
+  }), L(40, 175, "門"), /*#__PURE__*/React.createElement("rect", {
+    x: "200",
+    y: "116",
+    width: "32",
+    height: "30",
+    rx: "3",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "246",
+    y: "70",
+    width: "9",
+    height: "40",
+    fill: "#e0f2fe",
+    stroke: "#7dd3fc"
+  }), L(250, 124, "鏡"));
+  if (space === "kit") return /*#__PURE__*/React.createElement("g", null, base, /*#__PURE__*/React.createElement("rect", {
+    x: "40",
+    y: "60",
+    width: "222",
+    height: "30",
+    rx: "4",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), L(150, 105, "流理台"), /*#__PURE__*/React.createElement("rect", {
+    x: "160",
+    y: "62",
+    width: "40",
+    height: "26",
+    rx: "3",
+    fill: "#fee2e2",
+    stroke: "#fca5a5"
+  }), L(180, 100, "爐"), /*#__PURE__*/React.createElement("rect", {
+    x: "62",
+    y: "40",
+    width: "90",
+    height: "16",
+    rx: "3",
+    fill: "#ede9fe",
+    stroke: "#c4b5fd"
+  }), L(107, 36, "櫥櫃"));
+  return /*#__PURE__*/React.createElement("g", null, base, /*#__PURE__*/React.createElement("rect", {
+    x: "55",
+    y: "112",
+    width: "92",
+    height: "42",
+    rx: "8",
+    fill: "#ede9fe",
+    stroke: "#c4b5fd"
+  }), L(101, 137, "沙發"), /*#__PURE__*/React.createElement("rect", {
+    x: "60",
+    y: "55",
+    width: "55",
+    height: "9",
+    fill: "#44403c"
+  }), L(87, 50, "電視"), /*#__PURE__*/React.createElement("rect", {
+    x: "138",
+    y: "22",
+    width: "60",
+    height: "11",
+    fill: "#e0f2fe",
+    stroke: "#7dd3fc"
+  }), L(168, 18, "窗"), /*#__PURE__*/React.createElement("rect", {
+    x: "15",
+    y: "135",
+    width: "11",
+    height: "40",
+    fill: "#e7e5e4",
+    stroke: "#a8a29e"
+  }), L(40, 178, "門"), /*#__PURE__*/React.createElement("rect", {
+    x: "118",
+    y: "144",
+    width: "52",
+    height: "20",
+    rx: "4",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "248",
+    y: "150",
+    width: "38",
+    height: "12",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "255",
+    y: "130",
+    width: "31",
+    height: "12",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "262",
+    y: "110",
+    width: "24",
+    height: "12",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "269",
+    y: "90",
+    width: "17",
+    height: "12",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), L(266, 78, "樓梯"));
 }
 function RoomDiagram({
   space,
   findings
 }) {
-  return /*#__PURE__*/_jsxs("svg", {
+  return /*#__PURE__*/React.createElement("svg", {
     viewBox: "0 0 300 200",
     style: {
       width: "100%",
       fontFamily: FONT
-    },
-    children: [/*#__PURE__*/_jsx(Fixtures, {
-      space: space
-    }), findings.map((r, i) => {
-      const [x, y] = POS[r.id] || [150, 100];
-      return /*#__PURE__*/_jsxs("g", {
-        children: [/*#__PURE__*/_jsx("circle", {
-          cx: x,
-          cy: y,
-          r: "11",
-          fill: riskHex(r.risk),
-          stroke: "#fff",
-          strokeWidth: "2"
-        }), /*#__PURE__*/_jsx("text", {
-          x: x,
-          y: y,
-          dy: "4",
-          textAnchor: "middle",
-          fontSize: "12",
-          fontWeight: "700",
-          fill: "#fff",
-          children: i + 1
-        })]
-      }, r.id);
-    })]
-  });
+    }
+  }, /*#__PURE__*/React.createElement(Fixtures, {
+    space: space
+  }), findings.map((r, i) => {
+    const [x, y] = POS[r.id] || [150, 100];
+    return /*#__PURE__*/React.createElement("g", {
+      key: r.id
+    }, /*#__PURE__*/React.createElement("circle", {
+      cx: x,
+      cy: y,
+      r: "11",
+      fill: riskHex(r.risk),
+      stroke: "#fff",
+      strokeWidth: "2"
+    }), /*#__PURE__*/React.createElement("text", {
+      x: x,
+      y: y,
+      dy: "4",
+      textAnchor: "middle",
+      fontSize: "12",
+      fontWeight: "700",
+      fill: "#fff"
+    }, i + 1));
+  }));
 }
 function deriveProfile(a) {
   const p = new Set();
@@ -1061,545 +1049,425 @@ function UI() {
   const Radio = ({
     k,
     opts
-  }) => /*#__PURE__*/_jsx("div", {
-    className: "flex flex-wrap gap-2 mt-2",
-    children: opts.map(o => /*#__PURE__*/_jsx("button", {
-      onClick: () => set(k, o),
-      className: "px-3 py-2 rounded-xl border text-sm transition " + (a[k] === o ? "bg-teal-600 border-teal-600 text-white" : "bg-white border-stone-300 text-stone-700 hover:border-teal-400"),
-      children: o
-    }, o))
-  });
+  }) => /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 mt-2"
+  }, opts.map(o => /*#__PURE__*/React.createElement("button", {
+    key: o,
+    onClick: () => set(k, o),
+    className: "px-3 py-2 rounded-xl border text-sm transition " + (a[k] === o ? "bg-teal-600 border-teal-600 text-white" : "bg-white border-stone-300 text-stone-700 hover:border-teal-400")
+  }, o)));
   const Multi = ({
     k,
     opts
-  }) => /*#__PURE__*/_jsx("div", {
-    className: "flex flex-wrap gap-2 mt-2",
-    children: opts.map(o => {
-      const on = (a[k] || []).includes(o);
-      return /*#__PURE__*/_jsx("button", {
-        onClick: () => toggle(k, o),
-        className: "px-3 py-2 rounded-xl border text-sm transition " + (on ? "bg-amber-500 border-amber-500 text-white" : "bg-white border-stone-300 text-stone-700 hover:border-amber-400"),
-        children: o
-      }, o);
-    })
-  });
+  }) => /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 mt-2"
+  }, opts.map(o => {
+    const on = (a[k] || []).includes(o);
+    return /*#__PURE__*/React.createElement("button", {
+      key: o,
+      onClick: () => toggle(k, o),
+      className: "px-3 py-2 rounded-xl border text-sm transition " + (on ? "bg-amber-500 border-amber-500 text-white" : "bg-white border-stone-300 text-stone-700 hover:border-amber-400")
+    }, o);
+  }));
   const Q = ({
     n,
     children
-  }) => /*#__PURE__*/_jsxs("div", {
-    className: "mb-5",
-    children: [/*#__PURE__*/_jsx("p", {
-      className: "font-medium text-stone-800 leading-relaxed",
-      children: n
-    }), children]
-  });
-  const Steps = () => /*#__PURE__*/_jsx("div", {
-    className: "flex items-center gap-1 mb-6 text-xs flex-wrap",
-    children: ["使用說明", "健康自評", "居家空間", "評估報告"].map((s, i) => /*#__PURE__*/_jsxs(React.Fragment, {
-      children: [/*#__PURE__*/_jsxs("span", {
-        className: "px-2.5 py-1 rounded-full " + (i === step ? "bg-teal-600 text-white" : i < step ? "bg-teal-100 text-teal-800" : "bg-stone-200 text-stone-500"),
-        children: [i + 1, ". ", s]
-      }), i < 3 && /*#__PURE__*/_jsx("span", {
-        className: "text-stone-300",
-        children: "—"
-      })]
-    }, s))
-  });
-  const riskDot = r => /*#__PURE__*/_jsx("span", {
+  }) => /*#__PURE__*/React.createElement("div", {
+    className: "mb-5"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-medium text-stone-800 leading-relaxed"
+  }, n), children);
+  const Steps = () => /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1 mb-6 text-xs flex-wrap"
+  }, ["使用說明", "健康自評", "居家空間", "評估報告"].map((s, i) => /*#__PURE__*/React.createElement(React.Fragment, {
+    key: s
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "px-2.5 py-1 rounded-full " + (i === step ? "bg-teal-600 text-white" : i < step ? "bg-teal-100 text-teal-800" : "bg-stone-200 text-stone-500")
+  }, i + 1, ". ", s), i < 3 && /*#__PURE__*/React.createElement("span", {
+    className: "text-stone-300"
+  }, "—"))));
+  const riskDot = r => /*#__PURE__*/React.createElement("span", {
     className: "inline-block w-2.5 h-2.5 rounded-full",
     style: {
       background: riskHex(r)
     }
   });
-  const codeChip = c => /*#__PURE__*/_jsx("span", {
-    className: "text-xs px-1.5 py-0.5 rounded " + (c.startsWith("A") ? "bg-rose-100 text-rose-700" : c.startsWith("B") ? "bg-amber-100 text-amber-800" : "bg-sky-100 text-sky-700"),
-    children: c
-  });
-  return /*#__PURE__*/_jsxs("div", {
+  const codeChip = c => /*#__PURE__*/React.createElement("span", {
+    className: "text-xs px-1.5 py-0.5 rounded " + (c.startsWith("A") ? "bg-rose-100 text-rose-700" : c.startsWith("B") ? "bg-amber-100 text-amber-800" : "bg-sky-100 text-sky-700")
+  }, c);
+  return /*#__PURE__*/React.createElement("div", {
     style: {
       fontFamily: FONT
     },
-    className: "bg-stone-50 min-h-screen",
-    children: [/*#__PURE__*/_jsx("style", {
-      children: `@media print{.no-print{display:none!important}}`
-    }), /*#__PURE__*/_jsxs("div", {
-      className: "max-w-2xl mx-auto p-4 text-stone-800",
-      children: [/*#__PURE__*/_jsxs("div", {
-        className: "flex items-baseline justify-between mb-1 no-print",
-        children: [/*#__PURE__*/_jsx("h1", {
-          className: "text-xl font-semibold text-teal-800",
-          children: "居家友善自評"
-        }), /*#__PURE__*/_jsx("span", {
-          className: "text-xs text-stone-400",
-          children: "MVP 原型 v2"
-        })]
-      }), /*#__PURE__*/_jsx("p", {
-        className: "text-xs text-stone-400 mb-4 no-print",
-        children: "高齡／失智友善居家環境 · 申請前自我健檢"
-      }), /*#__PURE__*/_jsx("div", {
-        className: "no-print",
-        children: /*#__PURE__*/_jsx(Steps, {})
-      }), step === 0 && /*#__PURE__*/_jsxs("div", {
-        className: "bg-white rounded-2xl border border-stone-200 p-5",
-        children: [/*#__PURE__*/_jsx("h2", {
-          className: "font-semibold text-lg mb-3",
-          children: "開始前，請先了解"
-        }), /*#__PURE__*/_jsxs("div", {
-          className: "space-y-3 text-sm text-stone-600 leading-relaxed",
-          children: [/*#__PURE__*/_jsxs("p", {
-            children: [/*#__PURE__*/_jsx("b", {
-              className: "text-stone-800",
-              children: "這份報告能幫你："
-            }), "在打 1966 申請長照前，先看懂家裡哪裡危險、哪些可能符合補助、該準備什麼。"]
-          }), /*#__PURE__*/_jsxs("p", {
-            children: [/*#__PURE__*/_jsx("b", {
-              className: "text-stone-800",
-              children: "怎麼準備照片："
-            }), "每個空間拍 2 張——一張廣角看整體動線，一張近拍重點。光線充足、不逆光。"]
-          }), /*#__PURE__*/_jsxs("div", {
-            className: "bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900",
-            children: [/*#__PURE__*/_jsx("b", {
-              children: "免責聲明："
-            }), "本自評為居家環境配對之用，非醫療診斷，也不能取代長照官方評估報告書。補助以各縣市照管中心核定為準，請撥 1966。若對長輩健康有疑慮，請洽醫師。"]
-          })]
-        }), /*#__PURE__*/_jsxs("label", {
-          className: "flex items-center gap-2 mt-4 text-sm",
-          children: [/*#__PURE__*/_jsx("input", {
-            type: "checkbox",
-            checked: agree,
-            onChange: e => setAgree(e.target.checked),
-            className: "w-4 h-4 accent-teal-600"
-          }), "我已閱讀並了解上述說明"]
-        }), /*#__PURE__*/_jsx("button", {
-          disabled: !agree,
-          onClick: () => setStep(1),
-          className: "mt-4 w-full py-3 rounded-xl font-medium " + (agree ? "bg-teal-600 text-white" : "bg-stone-200 text-stone-400"),
-          children: "開始自評"
-        })]
-      }), step === 1 && /*#__PURE__*/_jsxs("div", {
-        className: "bg-white rounded-2xl border border-stone-200 p-5",
-        children: [/*#__PURE__*/_jsx("h2", {
-          className: "font-semibold text-lg mb-1",
-          children: "第二層 · 健康自評"
-        }), /*#__PURE__*/_jsx("p", {
-          className: "text-xs text-stone-400 mb-4",
-          children: "由家屬代填，用於配對居家環境，非診斷。"
-        }), /*#__PURE__*/_jsx("p", {
-          className: "font-semibold text-teal-700 mb-2",
-          children: "A. 過去半年實際狀況"
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "A1 是否跌倒？（可複選原因）",
-          children: /*#__PURE__*/_jsx(Multi, {
-            k: "fall",
-            opts: ["浴廁門檻絆倒", "出入口門檻絆倒", "浴廁滑倒無扶手", "上下床起身無力", "上下床無扶手", "其他", "否"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "A2 是否來不及上廁所？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "toilet",
-            opts: ["否", "找不到廁所", "疾病或行動"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "A4 廚房是否發生不安全事件？（可複選）",
-          children: /*#__PURE__*/_jsx(Multi, {
-            k: "kitchen",
-            opts: ["忘記關瓦斯", "燙傷", "持刀具傷人", "否"]
-          })
-        }), /*#__PURE__*/_jsx("p", {
-          className: "font-semibold text-teal-700 mb-2 mt-6",
-          children: "B. 能力面向"
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "B1 室內走動方式",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "walk",
-            opts: ["自如", "需扶牆家具", "拐杖助行器", "輪椅", "幾乎臥床"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "B2 從椅子或馬桶起身會吃力嗎？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "rise",
-            opts: ["不會", "有點", "需協助"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "B3 能連續站立洗澡數分鐘？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "stand",
-            opts: ["可", "勉強", "無法"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "B4 一般室內光下看清物品與臉孔？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "vision",
-            opts: ["清楚", "需更亮或略糊", "看不清"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "B5 交談需重複或大聲？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "hearTalk",
-            opts: ["不需", "偶爾", "經常"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "B6 可能聽不到門鈴、警報、來電？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "hearAlarm",
-            opts: ["可聽到", "不一定", "聽不到"]
-          })
-        }), /*#__PURE__*/_jsx("p", {
-          className: "text-sm text-stone-500 mt-2 mb-1",
-          children: "B7 認知（請回答是／否）"
-        }), [["cog1", "記性或判斷力比一年前明顯變差？"], ["cog2", "會重複問同樣問題、忘記剛發生的事？"], ["cog3", "操作家電（瓦斯爐、遙控器）變困難？"], ["cog4", "在熟悉環境會迷路或搞不清日期？"]].map(([k, t]) => /*#__PURE__*/_jsx(Q, {
-          n: t,
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: k,
-            opts: ["是", "否"]
-          })
-        }, k)), /*#__PURE__*/_jsx(Q, {
-          n: "B8 洗澡需協助？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "adlBath",
-            opts: ["自理", "部分", "完全依賴"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "B9 如廁需協助？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "adlToilet",
-            opts: ["自理", "部分", "完全依賴"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "B10 能自行外出購物或處理金錢？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "adlOut",
-            opts: ["可", "部分", "不能"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "B11 是否經醫師診斷失智？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "dementia",
-            opts: ["否", "疑似", "已確診"]
-          })
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "B12 近一個月情形（可複選）",
-          children: /*#__PURE__*/_jsx("div", {
-            className: "flex flex-wrap gap-2 mt-2",
-            children: [["BPSD-WAN", "想往外走/走失"], ["BPSD-SUN", "傍晚特別躁動"], ["BPSD-AGI", "易激動抗拒"], ["BPSD-MIS", "認不得家人/鏡中自己"], ["BPSD-FAL", "危險警覺下降"]].map(([v, t]) => {
-              const on = (a.bpsd || []).includes(v);
-              return /*#__PURE__*/_jsx("button", {
-                onClick: () => toggle("bpsd", v),
-                className: "px-3 py-2 rounded-xl border text-sm " + (on ? "bg-amber-500 border-amber-500 text-white" : "bg-white border-stone-300 hover:border-amber-400"),
-                children: t
-              }, v);
-            })
-          })
-        }), /*#__PURE__*/_jsx("p", {
-          className: "font-semibold text-teal-700 mb-2 mt-6",
-          children: "C. 居住情境"
-        }), /*#__PURE__*/_jsx(Q, {
-          n: "C1 長輩白天是否常獨自在家？",
-          children: /*#__PURE__*/_jsx(Radio, {
-            k: "alone",
-            opts: ["有人常在", "白天獨處", "獨居"]
-          })
-        }), /*#__PURE__*/_jsxs("div", {
-          className: "flex gap-2 mt-4",
-          children: [/*#__PURE__*/_jsx("button", {
-            onClick: () => setStep(0),
-            className: "px-4 py-3 rounded-xl border border-stone-300",
-            children: "上一步"
-          }), /*#__PURE__*/_jsx("button", {
-            onClick: () => setStep(2),
-            className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium",
-            children: "下一步：居家空間"
-          })]
-        })]
-      }), step === 2 && /*#__PURE__*/_jsxs("div", {
-        className: "space-y-4",
-        children: [/*#__PURE__*/_jsxs("div", {
-          className: "bg-white rounded-2xl border border-stone-200 p-5",
-          children: [/*#__PURE__*/_jsx("h2", {
-            className: "font-semibold text-lg mb-1",
-            children: "第三層 · 居家空間現況"
-          }), /*#__PURE__*/_jsx("p", {
-            className: "text-xs text-stone-400 mb-3",
-            children: "以下每個空間只列出「與這位長輩有關」的檢查項。"
-          }), /*#__PURE__*/_jsx("p", {
-            className: "text-sm font-medium mb-1",
-            children: "房屋所在縣市"
-          }), /*#__PURE__*/_jsxs("select", {
-            value: county,
-            onChange: e => setCounty(e.target.value),
-            className: "w-full border border-stone-300 rounded-xl px-3 py-2 text-sm",
-            children: [/*#__PURE__*/_jsx("option", {
-              value: "",
-              children: "請選擇"
-            }), COUNTIES.map(c => /*#__PURE__*/_jsx("option", {
-              children: c
-            }, c))]
-          }), /*#__PURE__*/_jsxs("div", {
-            className: "mt-3 flex flex-wrap gap-1 items-center",
-            children: [/*#__PURE__*/_jsx("span", {
-              className: "text-xs text-stone-400 mr-1",
-              children: "已推導能力剖面："
-            }), [...profile].length ? [...profile].map(t => /*#__PURE__*/_jsx("span", {
-              className: "text-xs px-1.5 py-0.5 rounded bg-teal-50 text-teal-700",
-              children: t
-            }, t)) : /*#__PURE__*/_jsx("span", {
-              className: "text-xs text-stone-400",
-              children: "（依您的回答動態產生）"
-            })]
-          })]
-        }), SPACES.map(({
-          key,
-          name
-        }) => {
-          const list = triggered(key);
-          const hot = boosted.has(key);
-          return /*#__PURE__*/_jsxs("div", {
-            className: "bg-white rounded-2xl border border-stone-200 p-5",
-            children: [/*#__PURE__*/_jsxs("div", {
-              className: "flex items-center justify-between mb-1",
-              children: [/*#__PURE__*/_jsx("h3", {
-                className: "font-semibold",
-                children: name
-              }), hot && /*#__PURE__*/_jsx("span", {
-                className: "text-xs px-2 py-0.5 rounded-full bg-rose-100 text-rose-700",
-                children: "依事件 · 優先檢視"
-              })]
-            }), /*#__PURE__*/_jsxs("label", {
-              className: "block text-sm text-stone-500 mt-2 mb-2",
-              children: ["上傳照片（最多 2 張，示範用）", /*#__PURE__*/_jsx("input", {
-                type: "file",
-                accept: "image/*",
-                multiple: true,
-                onChange: e => setPhotos(p => ({
-                  ...p,
-                  [key]: Array.from(e.target.files).slice(0, 2).map(f => f.name)
-                })),
-                className: "block mt-1 text-xs text-stone-500"
-              })]
-            }), photos[key]?.length > 0 && /*#__PURE__*/_jsxs("p", {
-              className: "text-xs text-emerald-600 mb-2",
-              children: ["已選 ", photos[key].length, " 張：", photos[key].join("、"), "（原型改以下方確認題模擬辨識）"]
-            }), list.length === 0 ? /*#__PURE__*/_jsx("p", {
-              className: "text-sm text-emerald-600",
-              children: "依目前能力剖面，此空間暫無需特別檢視。"
-            }) : /*#__PURE__*/_jsxs("div", {
-              className: "space-y-2 mt-1",
-              children: [/*#__PURE__*/_jsxs("p", {
-                className: "text-xs text-stone-400",
-                children: ["請確認以下 ", list.length, " 項家中是否已符合："]
-              }), list.map(r => {
-                const ck = `${key}:${r.id}`;
-                return /*#__PURE__*/_jsxs("div", {
-                  className: "border border-stone-200 rounded-xl p-3",
-                  children: [/*#__PURE__*/_jsxs("div", {
-                    className: "flex items-center gap-2 flex-wrap",
-                    children: [riskDot(r.risk), /*#__PURE__*/_jsx("span", {
-                      className: "font-medium text-sm",
-                      children: r.item
-                    }), codeChip(r.code)]
-                  }), /*#__PURE__*/_jsx("div", {
-                    className: "flex gap-2 mt-2",
-                    children: ["是", "否", "不確定"].map(o => /*#__PURE__*/_jsx("button", {
-                      onClick: () => setConfirms(c => ({
-                        ...c,
-                        [ck]: o
-                      })),
-                      className: "px-3 py-1.5 rounded-lg text-sm border " + (confirms[ck] === o ? o === "是" ? "bg-emerald-500 border-emerald-500 text-white" : "bg-stone-700 border-stone-700 text-white" : "bg-white border-stone-300 text-stone-600"),
-                      children: o
-                    }, o))
-                  })]
-                }, r.id);
-              })]
-            })]
-          }, key);
-        }), /*#__PURE__*/_jsxs("div", {
-          className: "flex gap-2",
-          children: [/*#__PURE__*/_jsx("button", {
-            onClick: () => setStep(1),
-            className: "px-4 py-3 rounded-xl border border-stone-300 bg-white",
-            children: "上一步"
-          }), /*#__PURE__*/_jsx("button", {
-            onClick: () => setStep(3),
-            className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium",
-            children: "產出評估報告"
-          })]
-        })]
-      }), step === 3 && /*#__PURE__*/_jsxs("div", {
-        className: "space-y-4",
-        children: [/*#__PURE__*/_jsxs("div", {
-          className: "bg-white rounded-2xl border border-stone-200 p-5",
-          children: [/*#__PURE__*/_jsx("h2", {
-            className: "font-semibold text-lg mb-2",
-            children: "居家友善環境評估報告"
-          }), /*#__PURE__*/_jsxs("p", {
-            className: "text-sm text-stone-500 mb-3",
-            children: ["所在地區：", county || "未填", "\u3000·\u3000報告為申請前自評，非官方評估報告書。"]
-          }), /*#__PURE__*/_jsx("div", {
-            className: "grid grid-cols-2 gap-3",
-            children: SPACES.map(({
-              key,
-              name
-            }) => {
-              const f = findings[key];
-              const high = f.filter(x => x.risk === "高").length;
-              const tone = high ? "bg-rose-50 text-rose-700" : f.length ? "bg-amber-50 text-amber-800" : "bg-emerald-50 text-emerald-700";
-              return /*#__PURE__*/_jsxs("div", {
-                className: "rounded-xl p-3 " + tone,
-                children: [/*#__PURE__*/_jsx("p", {
-                  className: "font-medium text-sm",
-                  children: name
-                }), /*#__PURE__*/_jsx("p", {
-                  className: "text-xs mt-1",
-                  children: f.length ? `${f.length} 項待改善（高風險 ${high}）` : "暫無待改善"
-                })]
-              }, key);
-            })
-          })]
-        }), SPACES.map(({
-          key,
-          name
-        }) => {
-          const f = findings[key];
-          if (!f.length) return null;
-          return /*#__PURE__*/_jsxs("div", {
-            className: "bg-white rounded-2xl border border-stone-200 p-5",
-            children: [/*#__PURE__*/_jsxs("h3", {
-              className: "font-semibold mb-3",
-              children: [name, "\u3000", /*#__PURE__*/_jsxs("span", {
-                className: "text-xs text-stone-400",
-                children: [f.length, " 項建議"]
-              })]
-            }), /*#__PURE__*/_jsxs("div", {
-              className: "rounded-xl border border-stone-200 bg-stone-50 p-2 mb-3",
-              children: [/*#__PURE__*/_jsx(RoomDiagram, {
-                space: key,
-                findings: f
-              }), /*#__PURE__*/_jsx("p", {
-                className: "text-xs text-stone-400 text-center mt-1",
-                children: "模擬標註圖：圈號對應下方編號 · 紅高／黃中／綠低風險"
-              })]
-            }), /*#__PURE__*/_jsx("div", {
-              className: "space-y-3",
-              children: f.map((r, i) => /*#__PURE__*/_jsxs("div", {
-                className: "flex gap-3",
-                children: [/*#__PURE__*/_jsx("div", {
-                  className: "shrink-0 w-7 h-7 rounded-full text-white text-sm flex items-center justify-center",
-                  style: {
-                    background: riskHex(r.risk)
-                  },
-                  children: i + 1
-                }), /*#__PURE__*/_jsxs("div", {
-                  className: "flex-1",
-                  children: [/*#__PURE__*/_jsxs("div", {
-                    className: "flex items-center gap-2 flex-wrap",
-                    children: [/*#__PURE__*/_jsx("span", {
-                      className: "font-medium text-sm",
-                      children: r.item
-                    }), codeChip(r.code), /*#__PURE__*/_jsx("span", {
-                      className: "text-xs px-1.5 py-0.5 rounded bg-stone-100 text-stone-600",
-                      children: r.triage
-                    })]
-                  }), /*#__PURE__*/_jsx("p", {
-                    className: "text-sm text-stone-600 mt-1 leading-relaxed",
-                    children: cleanWhy(r)
-                  }), r.subsidy && /*#__PURE__*/_jsxs("p", {
-                    className: "text-xs text-sky-700 mt-1",
-                    children: ["可能符合長照 3.0：", r.subsidy, "（以照管中心核定為準 · 撥 1966）"]
-                  })]
-                })]
-              }, r.id))
-            })]
-          }, key);
-        }), /*#__PURE__*/_jsxs("div", {
-          className: "bg-white rounded-2xl border border-stone-200 p-5",
-          children: [/*#__PURE__*/_jsx("h3", {
-            className: "font-semibold mb-2",
-            children: "在地專業服務資源"
-          }), /*#__PURE__*/_jsxs("p", {
-            className: "text-sm text-stone-600 leading-relaxed",
-            children: [county || "您所在縣市", "長期照顧管理中心（撥 1966 轉介）", /*#__PURE__*/_jsx("br", {}), "長照特約輔具／無障礙改善廠商（可採代償墊付，只付自付額）", /*#__PURE__*/_jsx("br", {}), "職能治療所 · 居家安全評估"]
-          }), /*#__PURE__*/_jsx("p", {
-            className: "text-xs text-stone-400 mt-2",
-            children: "＊名單由後台依縣市維護，此為示範。"
-          })]
-        }), /*#__PURE__*/_jsx("div", {
-          className: "bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-500 leading-relaxed",
-          children: "本報告為居家環境配對之用，非醫療診斷、非長照官方評估報告書；補助項目與額度以各縣市照管中心核定為準。若對長輩健康有疑慮，請洽醫師或撥 1966。"
-        }), /*#__PURE__*/_jsxs("div", {
-          className: "bg-white rounded-2xl border border-stone-200 p-5 no-print",
-          children: [/*#__PURE__*/_jsx("h3", {
-            className: "font-semibold mb-3",
-            children: "幫我們改進這份報告"
-          }), fb.sent ? /*#__PURE__*/_jsx("p", {
-            className: "text-emerald-600 text-sm",
-            children: "已送出，謝謝你的回饋！"
-          }) : /*#__PURE__*/_jsxs(_Fragment, {
-            children: [/*#__PURE__*/_jsx("p", {
-              className: "text-sm text-stone-700 mb-1",
-              children: "這份報告好不好懂？（1 很難懂 ～ 5 很清楚）"
-            }), /*#__PURE__*/_jsx("div", {
-              className: "flex gap-2 mb-4",
-              children: [1, 2, 3, 4, 5].map(n => /*#__PURE__*/_jsx("button", {
-                onClick: () => setFb(s => ({
-                  ...s,
-                  clarity: n
-                })),
-                className: "w-10 h-10 rounded-full border " + (fb.clarity === n ? "bg-teal-600 text-white border-teal-600" : "bg-white border-stone-300 text-stone-600"),
-                children: n
-              }, n))
-            }), /*#__PURE__*/_jsx("p", {
-              className: "text-sm text-stone-700 mb-1",
-              children: "看完後，你會想照著改善嗎？"
-            }), /*#__PURE__*/_jsx("div", {
-              className: "flex gap-2 mb-4",
-              children: ["會", "也許", "不會"].map(o => /*#__PURE__*/_jsx("button", {
-                onClick: () => setFb(s => ({
-                  ...s,
-                  willAct: o
-                })),
-                className: "px-4 py-2 rounded-xl border " + (fb.willAct === o ? "bg-teal-600 text-white border-teal-600" : "bg-white border-stone-300 text-stone-600"),
-                children: o
-              }, o))
-            }), /*#__PURE__*/_jsx("p", {
-              className: "text-sm text-stone-700 mb-1",
-              children: "其他想法（選填）"
-            }), /*#__PURE__*/_jsx("textarea", {
-              value: fb.comment,
-              onChange: e => setFb(s => ({
-                ...s,
-                comment: e.target.value
-              })),
-              rows: 3,
-              className: "w-full border border-stone-300 rounded-xl px-3 py-2 text-sm mb-3",
-              placeholder: "哪裡看不懂？少了什麼？"
-            }), /*#__PURE__*/_jsx("button", {
-              onClick: submitFeedback,
-              disabled: fb.sending,
-              className: "w-full py-3 rounded-xl bg-amber-500 text-white font-medium disabled:opacity-60",
-              children: fb.sending ? "送出中…" : "送出回饋"
-            }), /*#__PURE__*/_jsx("p", {
-              className: "text-xs text-stone-400 mt-2",
-              children: "回饋將匿名送至測試表單，不含個資。"
-            })]
-          })]
-        }), /*#__PURE__*/_jsxs("div", {
-          className: "flex gap-2 no-print",
-          children: [/*#__PURE__*/_jsx("button", {
-            onClick: () => setStep(2),
-            className: "px-4 py-3 rounded-xl border border-stone-300 bg-white",
-            children: "上一步"
-          }), /*#__PURE__*/_jsx("button", {
-            onClick: () => window.print(),
-            className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium",
-            children: "列印／存成 PDF"
-          })]
-        })]
-      })]
-    })]
-  });
+    className: "bg-stone-50 min-h-screen"
+  }, /*#__PURE__*/React.createElement("style", null, `@media print{.no-print{display:none!important}}`), /*#__PURE__*/React.createElement("div", {
+    className: "max-w-2xl mx-auto p-4 text-stone-800"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline justify-between mb-1 no-print"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-xl font-semibold text-teal-800"
+  }, "居家友善自評"), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-stone-400"
+  }, "MVP 原型 v2")), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-stone-400 mb-4 no-print"
+  }, "高齡／失智友善居家環境 · 申請前自我健檢"), /*#__PURE__*/React.createElement("div", {
+    className: "no-print"
+  }, /*#__PURE__*/React.createElement(Steps, null)), step === 0 && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-lg mb-3"
+  }, "開始前，請先了解"), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3 text-sm text-stone-600 leading-relaxed"
+  }, /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("b", {
+    className: "text-stone-800"
+  }, "這份報告能幫你："), "在打 1966 申請長照前，先看懂家裡哪裡危險、哪些可能符合補助、該準備什麼。"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("b", {
+    className: "text-stone-800"
+  }, "怎麼準備照片："), "每個空間拍 2 張——一張廣角看整體動線，一張近拍重點。光線充足、不逆光。"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900"
+  }, /*#__PURE__*/React.createElement("b", null, "免責聲明："), "本自評為居家環境配對之用，非醫療診斷，也不能取代長照官方評估報告書。補助以各縣市照管中心核定為準，請撥 1966。若對長輩健康有疑慮，請洽醫師。")), /*#__PURE__*/React.createElement("label", {
+    className: "flex items-center gap-2 mt-4 text-sm"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: agree,
+    onChange: e => setAgree(e.target.checked),
+    className: "w-4 h-4 accent-teal-600"
+  }), "我已閱讀並了解上述說明"), /*#__PURE__*/React.createElement("button", {
+    disabled: !agree,
+    onClick: () => setStep(1),
+    className: "mt-4 w-full py-3 rounded-xl font-medium " + (agree ? "bg-teal-600 text-white" : "bg-stone-200 text-stone-400")
+  }, "開始自評")), step === 1 && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-lg mb-1"
+  }, "第二層 · 健康自評"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-stone-400 mb-4"
+  }, "由家屬代填，用於配對居家環境，非診斷。"), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-teal-700 mb-2"
+  }, "A. 過去半年實際狀況"), /*#__PURE__*/React.createElement(Q, {
+    n: "A1 是否跌倒？（可複選原因）"
+  }, /*#__PURE__*/React.createElement(Multi, {
+    k: "fall",
+    opts: ["浴廁門檻絆倒", "出入口門檻絆倒", "浴廁滑倒無扶手", "上下床起身無力", "上下床無扶手", "其他", "否"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "A2 是否來不及上廁所？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "toilet",
+    opts: ["否", "找不到廁所", "疾病或行動"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "A4 廚房是否發生不安全事件？（可複選）"
+  }, /*#__PURE__*/React.createElement(Multi, {
+    k: "kitchen",
+    opts: ["忘記關瓦斯", "燙傷", "持刀具傷人", "否"]
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-teal-700 mb-2 mt-6"
+  }, "B. 能力面向"), /*#__PURE__*/React.createElement(Q, {
+    n: "B1 室內走動方式"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "walk",
+    opts: ["自如", "需扶牆家具", "拐杖助行器", "輪椅", "幾乎臥床"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "B2 從椅子或馬桶起身會吃力嗎？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "rise",
+    opts: ["不會", "有點", "需協助"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "B3 能連續站立洗澡數分鐘？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "stand",
+    opts: ["可", "勉強", "無法"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "B4 一般室內光下看清物品與臉孔？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "vision",
+    opts: ["清楚", "需更亮或略糊", "看不清"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "B5 交談需重複或大聲？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "hearTalk",
+    opts: ["不需", "偶爾", "經常"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "B6 可能聽不到門鈴、警報、來電？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "hearAlarm",
+    opts: ["可聽到", "不一定", "聽不到"]
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-stone-500 mt-2 mb-1"
+  }, "B7 認知（請回答是／否）"), [["cog1", "記性或判斷力比一年前明顯變差？"], ["cog2", "會重複問同樣問題、忘記剛發生的事？"], ["cog3", "操作家電（瓦斯爐、遙控器）變困難？"], ["cog4", "在熟悉環境會迷路或搞不清日期？"]].map(([k, t]) => /*#__PURE__*/React.createElement(Q, {
+    key: k,
+    n: t
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: k,
+    opts: ["是", "否"]
+  }))), /*#__PURE__*/React.createElement(Q, {
+    n: "B8 洗澡需協助？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "adlBath",
+    opts: ["自理", "部分", "完全依賴"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "B9 如廁需協助？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "adlToilet",
+    opts: ["自理", "部分", "完全依賴"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "B10 能自行外出購物或處理金錢？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "adlOut",
+    opts: ["可", "部分", "不能"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "B11 是否經醫師診斷失智？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "dementia",
+    opts: ["否", "疑似", "已確診"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "B12 近一個月情形（可複選）"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 mt-2"
+  }, [["BPSD-WAN", "想往外走/走失"], ["BPSD-SUN", "傍晚特別躁動"], ["BPSD-AGI", "易激動抗拒"], ["BPSD-MIS", "認不得家人/鏡中自己"], ["BPSD-FAL", "危險警覺下降"]].map(([v, t]) => {
+    const on = (a.bpsd || []).includes(v);
+    return /*#__PURE__*/React.createElement("button", {
+      key: v,
+      onClick: () => toggle("bpsd", v),
+      className: "px-3 py-2 rounded-xl border text-sm " + (on ? "bg-amber-500 border-amber-500 text-white" : "bg-white border-stone-300 hover:border-amber-400")
+    }, t);
+  }))), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-teal-700 mb-2 mt-6"
+  }, "C. 居住情境"), /*#__PURE__*/React.createElement(Q, {
+    n: "C1 長輩白天是否常獨自在家？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "alone",
+    opts: ["有人常在", "白天獨處", "獨居"]
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 mt-4"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(0),
+    className: "px-4 py-3 rounded-xl border border-stone-300"
+  }, "上一步"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(2),
+    className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium"
+  }, "下一步：居家空間"))), step === 2 && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-lg mb-1"
+  }, "第三層 · 居家空間現況"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-stone-400 mb-3"
+  }, "以下每個空間只列出「與這位長輩有關」的檢查項。"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-medium mb-1"
+  }, "房屋所在縣市"), /*#__PURE__*/React.createElement("select", {
+    value: county,
+    onChange: e => setCounty(e.target.value),
+    className: "w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "請選擇"), COUNTIES.map(c => /*#__PURE__*/React.createElement("option", {
+    key: c
+  }, c))), /*#__PURE__*/React.createElement("div", {
+    className: "mt-3 flex flex-wrap gap-1 items-center"
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-stone-400 mr-1"
+  }, "已推導能力剖面："), [...profile].length ? [...profile].map(t => /*#__PURE__*/React.createElement("span", {
+    key: t,
+    className: "text-xs px-1.5 py-0.5 rounded bg-teal-50 text-teal-700"
+  }, t)) : /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-stone-400"
+  }, "（依您的回答動態產生）"))), SPACES.map(({
+    key,
+    name
+  }) => {
+    const list = triggered(key);
+    const hot = boosted.has(key);
+    return /*#__PURE__*/React.createElement("div", {
+      key: key,
+      className: "bg-white rounded-2xl border border-stone-200 p-5"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between mb-1"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-semibold"
+    }, name), hot && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs px-2 py-0.5 rounded-full bg-rose-100 text-rose-700"
+    }, "依事件 · 優先檢視")), /*#__PURE__*/React.createElement("label", {
+      className: "block text-sm text-stone-500 mt-2 mb-2"
+    }, "上傳照片（最多 2 張，示範用）", /*#__PURE__*/React.createElement("input", {
+      type: "file",
+      accept: "image/*",
+      multiple: true,
+      onChange: e => setPhotos(p => ({
+        ...p,
+        [key]: Array.from(e.target.files).slice(0, 2).map(f => f.name)
+      })),
+      className: "block mt-1 text-xs text-stone-500"
+    })), photos[key]?.length > 0 && /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-emerald-600 mb-2"
+    }, "已選 ", photos[key].length, " 張：", photos[key].join("、"), "（原型改以下方確認題模擬辨識）"), list.length === 0 ? /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-emerald-600"
+    }, "依目前能力剖面，此空間暫無需特別檢視。") : /*#__PURE__*/React.createElement("div", {
+      className: "space-y-2 mt-1"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-stone-400"
+    }, "請確認以下 ", list.length, " 項家中是否已符合："), list.map(r => {
+      const ck = `${key}:${r.id}`;
+      return /*#__PURE__*/React.createElement("div", {
+        key: r.id,
+        className: "border border-stone-200 rounded-xl p-3"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-center gap-2 flex-wrap"
+      }, riskDot(r.risk), /*#__PURE__*/React.createElement("span", {
+        className: "font-medium text-sm"
+      }, r.item), codeChip(r.code)), /*#__PURE__*/React.createElement("div", {
+        className: "flex gap-2 mt-2"
+      }, ["是", "否", "不確定"].map(o => /*#__PURE__*/React.createElement("button", {
+        key: o,
+        onClick: () => setConfirms(c => ({
+          ...c,
+          [ck]: o
+        })),
+        className: "px-3 py-1.5 rounded-lg text-sm border " + (confirms[ck] === o ? o === "是" ? "bg-emerald-500 border-emerald-500 text-white" : "bg-stone-700 border-stone-700 text-white" : "bg-white border-stone-300 text-stone-600")
+      }, o))));
+    })));
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(1),
+    className: "px-4 py-3 rounded-xl border border-stone-300 bg-white"
+  }, "上一步"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(3),
+    className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium"
+  }, "產出評估報告"))), step === 3 && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-lg mb-2"
+  }, "居家友善環境評估報告"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-stone-500 mb-3"
+  }, "所在地區：", county || "未填", "\u3000·\u3000報告為申請前自評，非官方評估報告書。"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 gap-3"
+  }, SPACES.map(({
+    key,
+    name
+  }) => {
+    const f = findings[key];
+    const high = f.filter(x => x.risk === "高").length;
+    const tone = high ? "bg-rose-50 text-rose-700" : f.length ? "bg-amber-50 text-amber-800" : "bg-emerald-50 text-emerald-700";
+    return /*#__PURE__*/React.createElement("div", {
+      key: key,
+      className: "rounded-xl p-3 " + tone
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-medium text-sm"
+    }, name), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs mt-1"
+    }, f.length ? `${f.length} 項待改善（高風險 ${high}）` : "暫無待改善"));
+  }))), SPACES.map(({
+    key,
+    name
+  }) => {
+    const f = findings[key];
+    if (!f.length) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      key: key,
+      className: "bg-white rounded-2xl border border-stone-200 p-5"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-semibold mb-3"
+    }, name, "\u3000", /*#__PURE__*/React.createElement("span", {
+      className: "text-xs text-stone-400"
+    }, f.length, " 項建議")), /*#__PURE__*/React.createElement("div", {
+      className: "rounded-xl border border-stone-200 bg-stone-50 p-2 mb-3"
+    }, /*#__PURE__*/React.createElement(RoomDiagram, {
+      space: key,
+      findings: f
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-stone-400 text-center mt-1"
+    }, "模擬標註圖：圈號對應下方編號 · 紅高／黃中／綠低風險")), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, f.map((r, i) => /*#__PURE__*/React.createElement("div", {
+      key: r.id,
+      className: "flex gap-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "shrink-0 w-7 h-7 rounded-full text-white text-sm flex items-center justify-center",
+      style: {
+        background: riskHex(r.risk)
+      }
+    }, i + 1), /*#__PURE__*/React.createElement("div", {
+      className: "flex-1"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 flex-wrap"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-medium text-sm"
+    }, r.item), codeChip(r.code), /*#__PURE__*/React.createElement("span", {
+      className: "text-xs px-1.5 py-0.5 rounded bg-stone-100 text-stone-600"
+    }, r.triage)), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-stone-600 mt-1 leading-relaxed"
+    }, cleanWhy(r)), r.subsidy && /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-sky-700 mt-1"
+    }, "可能符合長照 3.0：", r.subsidy, "（以照管中心核定為準 · 撥 1966）"))))));
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-semibold mb-2"
+  }, "在地專業服務資源"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-stone-600 leading-relaxed"
+  }, county || "您所在縣市", "長期照顧管理中心（撥 1966 轉介）", /*#__PURE__*/React.createElement("br", null), "長照特約輔具／無障礙改善廠商（可採代償墊付，只付自付額）", /*#__PURE__*/React.createElement("br", null), "職能治療所 · 居家安全評估"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-stone-400 mt-2"
+  }, "＊名單由後台依縣市維護，此為示範。")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-500 leading-relaxed"
+  }, "本報告為居家環境配對之用，非醫療診斷、非長照官方評估報告書；補助項目與額度以各縣市照管中心核定為準。若對長輩健康有疑慮，請洽醫師或撥 1966。"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5 no-print"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-semibold mb-3"
+  }, "幫我們改進這份報告"), fb.sent ? /*#__PURE__*/React.createElement("p", {
+    className: "text-emerald-600 text-sm"
+  }, "已送出，謝謝你的回饋！") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-stone-700 mb-1"
+  }, "這份報告好不好懂？（1 很難懂 ～ 5 很清楚）"), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 mb-4"
+  }, [1, 2, 3, 4, 5].map(n => /*#__PURE__*/React.createElement("button", {
+    key: n,
+    onClick: () => setFb(s => ({
+      ...s,
+      clarity: n
+    })),
+    className: "w-10 h-10 rounded-full border " + (fb.clarity === n ? "bg-teal-600 text-white border-teal-600" : "bg-white border-stone-300 text-stone-600")
+  }, n))), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-stone-700 mb-1"
+  }, "看完後，你會想照著改善嗎？"), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 mb-4"
+  }, ["會", "也許", "不會"].map(o => /*#__PURE__*/React.createElement("button", {
+    key: o,
+    onClick: () => setFb(s => ({
+      ...s,
+      willAct: o
+    })),
+    className: "px-4 py-2 rounded-xl border " + (fb.willAct === o ? "bg-teal-600 text-white border-teal-600" : "bg-white border-stone-300 text-stone-600")
+  }, o))), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-stone-700 mb-1"
+  }, "其他想法（選填）"), /*#__PURE__*/React.createElement("textarea", {
+    value: fb.comment,
+    onChange: e => setFb(s => ({
+      ...s,
+      comment: e.target.value
+    })),
+    rows: 3,
+    className: "w-full border border-stone-300 rounded-xl px-3 py-2 text-sm mb-3",
+    placeholder: "哪裡看不懂？少了什麼？"
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: submitFeedback,
+    disabled: fb.sending,
+    className: "w-full py-3 rounded-xl bg-amber-500 text-white font-medium disabled:opacity-60"
+  }, fb.sending ? "送出中…" : "送出回饋"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-stone-400 mt-2"
+  }, "回饋將匿名送至測試表單，不含個資。"))), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 no-print"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(2),
+    className: "px-4 py-3 rounded-xl border border-stone-300 bg-white"
+  }, "上一步"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => window.print(),
+    className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium"
+  }, "列印／存成 PDF")))));
 }
 function App() {
-  return /*#__PURE__*/_jsx(UI, {});
+  return /*#__PURE__*/React.createElement(UI, null);
 }
 ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
 </script>
