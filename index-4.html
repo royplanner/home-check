@@ -1,0 +1,1607 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>居家友善自評</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div id="root"></div>
+<script>
+import { jsx as _jsx, jsxs as _jsxs, Fragment as _Fragment } from "react/jsx-runtime";
+const {
+  useState,
+  useMemo
+} = React;
+
+// ─────────────────────────────────────────────────────────────
+// 居家高齡／失智友善自評 — MVP 原型 v2
+// 完整母檔四空間規則(56條) + 模擬標註圖(編號圈選)
+// ─────────────────────────────────────────────────────────────
+
+const FONT = '"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+const COUNTIES = ["臺北市", "新北市", "桃園市", "臺中市", "臺南市", "高雄市", "新竹市", "嘉義市", "彰化縣", "其他縣市"];
+const SPACES = [{
+  key: "bath",
+  name: "浴室"
+}, {
+  key: "bed",
+  name: "臥室"
+}, {
+  key: "kit",
+  name: "廚房"
+}, {
+  key: "liv",
+  name: "客廳（含樓梯走廊）"
+}];
+
+// ─── 回饋表單設定 ──────────────────────────────────────────────
+// 設定步驟：
+// 1. 到 Google 表單(forms.google.com)建立 7 個「簡答」題目：
+//    縣市 / 能力剖面 / 各空間待改善數 / 高風險總數 / 報告好不好懂 / 會不會想改善 / 留言
+// 2. 右上「⋮」→「取得預先填入的連結」→ 隨意填值 → 取得連結，
+//    連結中每題會有 entry.數字，把它們對應填到下方 entries。
+// 3. 把表單「傳送」連結中的 .../viewform 換成 .../formResponse，貼到 formActionUrl。
+// 4. 表單回應會自動匯入其連結的 Google 試算表。
+const FEEDBACK = {
+  formActionUrl: "https://docs.google.com/forms/d/e/XXXXXXXX/formResponse",
+  entries: {
+    county: "entry.1000001",
+    profile: "entry.1000002",
+    counts: "entry.1000003",
+    highRisk: "entry.1000004",
+    clarity: "entry.1000005",
+    willAct: "entry.1000006",
+    comment: "entry.1000007"
+  }
+};
+
+// 完整規則庫（自母檔讀回）
+const RULES = {
+  "bath": [{
+    "id": "BR-01",
+    "item": "馬桶側L型扶手",
+    "tags": ["MOB-4", "MOB-2", "ADL-1"],
+    "code": "C",
+    "risk": "高",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·馬桶扶手",
+    "why": "馬桶旁建議加裝L型扶手並選對比色，起身更穩。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-1"
+  }, {
+    "id": "BR-02",
+    "item": "淋浴/浴缸抓握扶手",
+    "tags": ["MOB-2", "MOB-3", "MOB-6"],
+    "code": "C",
+    "risk": "高",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·淋浴扶手",
+    "why": "淋浴區建議加裝防滑扶手，洗澡更安全。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-2"
+  }, {
+    "id": "BR-03",
+    "item": "面盆安全扶手",
+    "tags": ["MOB-2", "MOB-5"],
+    "code": "C",
+    "risk": "中",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·面盆扶手",
+    "why": "面盆旁加裝扶手可避免重壓面盆破裂。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-3"
+  }, {
+    "id": "BR-04",
+    "item": "地面防滑",
+    "tags": ["全體", "VIS-2", "MOB-3"],
+    "code": "C",
+    "risk": "高",
+    "triage": "②採購／③工班·轉介",
+    "subsidy": "居家無障礙改善·防滑施工",
+    "why": "建議做防滑處理或鋪固定式防滑墊。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-4"
+  }, {
+    "id": "BR-05",
+    "item": "出入口零門檻·高低差",
+    "tags": ["MOB-2", "MOB-3", "BPSD-FAL", "DEM"],
+    "code": "A／C",
+    "risk": "高",
+    "triage": "①免費(貼對比條)／③工班·轉介(剷除)",
+    "subsidy": "居家無障礙改善·門檻剔除/斜坡板",
+    "why": "門檻是跌倒主因；建議剷平或貼對比色提醒。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-5"
+  }, {
+    "id": "BR-06",
+    "item": "門型與門寬",
+    "tags": ["MOB-2", "MOB-5"],
+    "code": "C",
+    "risk": "中",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·門寬拓寬/改橫拉門",
+    "why": "改橫拉門可省空間並利進出。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-6"
+  }, {
+    "id": "BR-07",
+    "item": "淋浴座椅",
+    "tags": ["MOB-6", "ADL-1"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購／③輔具補助",
+    "subsidy": "輔具·洗澡椅",
+    "why": "建議備穩固洗澡椅，避免久站跌倒。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-7"
+  }, {
+    "id": "BR-08",
+    "item": "馬桶高度",
+    "tags": ["MOB-4"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": "輔具·增高便座",
+    "why": "可加增高便座降低起身負擔。",
+    "callout": "浴-8"
+  }, {
+    "id": "BR-09",
+    "item": "緊急對外求助",
+    "tags": ["LIV-ALONE", "DEM", "ADL-2"],
+    "code": "A",
+    "risk": "高",
+    "triage": "②採購／③",
+    "subsidy": "2026/7起·安全看視類租賃",
+    "why": "獨居或失智者建議裝緊急求助鈕(含低位)。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-9"
+  }, {
+    "id": "BR-10",
+    "item": "照明·感應夜燈",
+    "tags": ["VIS-2", "DEM", "BPSD-SUN"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "加裝感應夜燈，夜間如廁不摸黑。",
+    "callout": "浴-10"
+  }, {
+    "id": "BR-11",
+    "item": "色彩對比·潔具辨識",
+    "tags": ["VIS-2", "DEM", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "換對比色馬桶座墊，幫助辨識降低意外。",
+    "callout": "浴-11"
+  }, {
+    "id": "BR-12",
+    "item": "輪椅迴轉空間",
+    "tags": ["MOB-5"],
+    "code": "C",
+    "risk": "中",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·動線",
+    "why": "空間不足者建議調整動線。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-12"
+  }, {
+    "id": "BR-13",
+    "item": "手持可調花灑/桿式龍頭",
+    "tags": ["MOB-2", "VIS-2"],
+    "code": "B",
+    "risk": "低",
+    "triage": "①／②採購",
+    "subsidy": null,
+    "why": "換手持花灑與桿式龍頭，使用更省力。",
+    "callout": "浴-13"
+  }, {
+    "id": "BR-14",
+    "item": "電器安全·動線雜物",
+    "tags": ["全體", "COG-2", "BPSD-FAL"],
+    "code": "A／C",
+    "risk": "中",
+    "triage": "①免費／③工班·轉介",
+    "subsidy": null,
+    "why": "移除濕區電器、清走道雜物可降低意外。",
+    "callout": "浴-14"
+  }, {
+    "id": "BR-15",
+    "item": "門把與門框可辨識",
+    "tags": ["DEM", "VIS-2", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費(貼/漆)",
+    "subsidy": null,
+    "why": "門把門框用對比色，較易辨識進出。",
+    "callout": "浴-15"
+  }, {
+    "id": "BR-16",
+    "item": "找得到廁所·圖示標示",
+    "tags": ["DEM", "COG-2", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "在動線貼廁所圖示，減少來不及如廁。",
+    "callout": "浴-16"
+  }, {
+    "id": "BR-17",
+    "item": "乾濕分離·地面乾燥",
+    "tags": ["全體", "MOB-3"],
+    "code": "C",
+    "risk": "中",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善",
+    "why": "建議乾濕分離或改善排水保持地面乾燥。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-17"
+  }],
+  "bed": [{
+    "id": "BD-01",
+    "item": "床側扶手/穩固撐扶物",
+    "tags": ["MOB-4", "MOB-2", "ADL-1"],
+    "code": "C",
+    "risk": "高",
+    "triage": "③工班·轉介／②採購",
+    "subsidy": "輔具·床側扶手",
+    "why": "床邊加裝扶手，上下床更安全。（補助以照管中心核定為準·撥1966）",
+    "callout": "臥-1"
+  }, {
+    "id": "BD-02",
+    "item": "感應小夜燈(床→廁所動線)",
+    "tags": ["VIS-2", "DEM", "BPSD-SUN", "LIV-ALONE"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "床到廁所裝感應夜燈，夜起不跌倒。",
+    "callout": "臥-2"
+  }, {
+    "id": "BD-03",
+    "item": "個人/親友照片·熟悉家具",
+    "tags": ["DEM", "BPSD-AGI"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "擺放熟悉照片與物件，安定情緒、助回憶。",
+    "callout": "臥-3"
+  }, {
+    "id": "BD-04",
+    "item": "開關/插座可辨識",
+    "tags": ["VIS-2", "COG-2", "DEM"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "開關貼螢光標示，夜間好找好辨。",
+    "callout": "臥-4"
+  }, {
+    "id": "BD-05",
+    "item": "開關/插座可操作且高度適當",
+    "tags": ["MOB-2", "VIS-2"],
+    "code": "B",
+    "risk": "低",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "改翹板開關、調整高度更好操作。",
+    "callout": "臥-5"
+  }, {
+    "id": "BD-06",
+    "item": "鏡中人可辨識",
+    "tags": ["DEM-2", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "若認不得鏡中人，可用布遮蓋鏡面以免不安。",
+    "callout": "臥-6"
+  }, {
+    "id": "BD-07",
+    "item": "窗簾素面不反光·遮光",
+    "tags": ["DEM", "BPSD-SUN", "VIS-2"],
+    "code": "B",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "換素面窗簾並可遮光，減少黃昏混亂。",
+    "callout": "臥-7"
+  }, {
+    "id": "BD-08",
+    "item": "個人物品固定收納處",
+    "tags": ["COG-2", "DEM"],
+    "code": "B",
+    "risk": "低",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "常用物固定放置，減少遍尋與焦慮。",
+    "callout": "臥-8"
+  }, {
+    "id": "BD-09",
+    "item": "地板/牆/門顏色對比",
+    "tags": ["VIS-2", "DEM", "BPSD-MIS"],
+    "code": "B",
+    "risk": "中",
+    "triage": "②採購／③",
+    "subsidy": null,
+    "why": "地牆門做顏色對比，較易辨識空間邊界。",
+    "callout": "臥-9"
+  }, {
+    "id": "BD-10",
+    "item": "動線無電線·無雜物",
+    "tags": ["MOB-3", "VIS-2", "BPSD-FAL"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "清走道與電線，避免夜間絆倒。",
+    "callout": "臥-10"
+  }, {
+    "id": "BD-11",
+    "item": "床高度適中",
+    "tags": ["MOB-4"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "調整床高，起身更省力。",
+    "callout": "臥-11"
+  }, {
+    "id": "BD-12",
+    "item": "對外求助/電話可及",
+    "tags": ["LIV-ALONE", "HEAR-2"],
+    "code": "B",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "床邊備可及的電話或求助鈕。",
+    "callout": "臥-12"
+  }],
+  "kit": [{
+    "id": "KT-01",
+    "item": "危險器具收納(刀具)",
+    "tags": ["BPSD-FAL", "DEM", "COG-2"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "刀具等收進有鎖櫥櫃，避免誤用受傷。",
+    "callout": "廚-1"
+  }, {
+    "id": "KT-02",
+    "item": "瓦斯安全·定時關火/改IH",
+    "tags": ["BPSD-FAL", "COG-2", "DEM"],
+    "code": "A",
+    "risk": "高",
+    "triage": "②採購／③工班·轉介",
+    "subsidy": null,
+    "why": "加裝瓦斯定時開關或改IH爐，防忘記關火。（補助以照管中心核定為準·撥1966）",
+    "callout": "廚-2"
+  }, {
+    "id": "KT-03",
+    "item": "煙霧偵測器",
+    "tags": ["全體", "DEM"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①／②採購",
+    "subsidy": null,
+    "why": "裝設煙霧偵測器，火災早警示。",
+    "callout": "廚-3"
+  }, {
+    "id": "KT-04",
+    "item": "櫥櫃內物可辨識正確拿取",
+    "tags": ["COG-2", "DEM", "VIS-2"],
+    "code": "B",
+    "risk": "中",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "改開放式或貼標示，較易找到正確物品。",
+    "callout": "廚-4"
+  }, {
+    "id": "KT-05",
+    "item": "使用慣用水壺餐具",
+    "tags": ["DEM"],
+    "code": "B",
+    "risk": "低",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "沿用熟悉餐具，降低操作困惑。",
+    "callout": "廚-5"
+  }, {
+    "id": "KT-06",
+    "item": "檯面/地面照明充足無眩光",
+    "tags": ["VIS-2", "DEM"],
+    "code": "B",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "加強檯面照明，作業更安全。",
+    "callout": "廚-6"
+  }, {
+    "id": "KT-07",
+    "item": "地面防滑",
+    "tags": ["全體", "MOB-3"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購／③",
+    "subsidy": "居家無障礙改善·防滑",
+    "why": "廚房地面做防滑，避免滑倒。（補助以照管中心核定為準·撥1966）",
+    "callout": "廚-7"
+  }, {
+    "id": "KT-08",
+    "item": "動線無雜物·無電線",
+    "tags": ["MOB-3", "BPSD-FAL"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "清走道與電線，避免絆倒。",
+    "callout": "廚-8"
+  }],
+  "liv": [{
+    "id": "LR-01",
+    "item": "出入口/室內門檻辨識或剷平",
+    "tags": ["DEM", "VIS-2", "MOB-3", "BPSD-FAL"],
+    "code": "A／C",
+    "risk": "高",
+    "triage": "①免費(對比條)／③工班·轉介",
+    "subsidy": "居家無障礙改善·門檻剔除",
+    "why": "門檻貼對比色或剷平，避免絆倒。（補助以照管中心核定為準·撥1966）",
+    "callout": "廳-1"
+  }, {
+    "id": "LR-02",
+    "item": "家具與牆地對比·不反光",
+    "tags": ["VIS-2", "DEM", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "家具選對比不反光色，較易辨識。",
+    "callout": "廳-2"
+  }, {
+    "id": "LR-03",
+    "item": "光線充足·無陰影·不眩光",
+    "tags": ["VIS-2", "DEM", "BPSD-SUN"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "補足照明、減陰影眩光。",
+    "callout": "廳-3"
+  }, {
+    "id": "LR-04",
+    "item": "開放式櫥櫃易見內部",
+    "tags": ["COG-2", "DEM"],
+    "code": "A",
+    "risk": "低",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "改開放式櫥櫃，物品一目了然。",
+    "callout": "廳-4"
+  }, {
+    "id": "LR-05",
+    "item": "個人照片·喜愛作品家具",
+    "tags": ["DEM", "BPSD-AGI"],
+    "code": "A",
+    "risk": "低",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "擺放熟悉物件，安定情緒助回憶。",
+    "callout": "廳-5"
+  }, {
+    "id": "LR-06",
+    "item": "大字時鐘＋日曆(定向)",
+    "tags": ["COG-2", "DEM"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "放大字時鐘與日曆，協助時間定向。",
+    "callout": "廳-6"
+  }, {
+    "id": "LR-07",
+    "item": "行走動線無電線·無雜物",
+    "tags": ["MOB-3", "VIS-2", "BPSD-FAL"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "清動線與電線，降低跌倒。",
+    "callout": "廳-7"
+  }, {
+    "id": "LR-08",
+    "item": "透明玻璃門/窗加標示",
+    "tags": ["DEM", "VIS-2", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "玻璃門窗貼霧面/標示，防誤撞。",
+    "callout": "廳-8"
+  }, {
+    "id": "LR-09",
+    "item": "刺激管理·降噪",
+    "tags": ["BPSD-AGI", "DEM", "HEAR-2"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "減少不必要噪音，降低躁動。",
+    "callout": "廳-9"
+  }, {
+    "id": "LR-10",
+    "item": "座椅有扶手·高度適合·起身支撐",
+    "tags": ["MOB-4", "ADL-1"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購／③輔具",
+    "subsidy": "輔具·有扶手座椅",
+    "why": "換有扶手適高座椅，起身更穩。（補助以照管中心核定為準·撥1966）",
+    "callout": "廳-10"
+  }, {
+    "id": "LR-11",
+    "item": "家具尖銳角防護",
+    "tags": ["BPSD-FAL", "全體"],
+    "code": "C",
+    "risk": "中",
+    "triage": "①／②採購",
+    "subsidy": null,
+    "why": "家具尖角加防護套，避免撞傷。",
+    "callout": "廳-11"
+  }, {
+    "id": "LR-12",
+    "item": "高大家具固定於牆",
+    "tags": ["全體"],
+    "code": "B",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "高家具固定於牆，防傾倒。",
+    "callout": "廳-12"
+  }, {
+    "id": "LR-13",
+    "item": "樓梯間/走道照明充足",
+    "tags": ["VIS-2", "DEM"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "樓梯走道補足照明。",
+    "callout": "廳-13"
+  }, {
+    "id": "LR-14",
+    "item": "階梯邊緣可辨識",
+    "tags": ["VIS-2", "DEM", "MOB-3"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①／②採購",
+    "subsidy": null,
+    "why": "階梯邊緣貼對比止滑條，看清每一階。",
+    "callout": "廳-14"
+  }, {
+    "id": "LR-15",
+    "item": "走廊/大廳/電梯方向可辨識",
+    "tags": ["DEM", "BPSD-MIS", "COG-2"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "主要方向加標示，減少迷路。",
+    "callout": "廳-15"
+  }, {
+    "id": "LR-16",
+    "item": "階梯表面防滑",
+    "tags": ["MOB-3", "全體"],
+    "code": "C",
+    "risk": "高",
+    "triage": "②採購／③",
+    "subsidy": "居家無障礙改善·防滑",
+    "why": "階梯做防滑處理。（補助以照管中心核定為準·撥1966）",
+    "callout": "廳-16"
+  }, {
+    "id": "LR-17",
+    "item": "樓梯間無堆積雜物",
+    "tags": ["MOB-3", "BPSD-FAL"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "清空樓梯雜物，避免絆倒。",
+    "callout": "廳-17"
+  }, {
+    "id": "LR-18",
+    "item": "樓梯雙側穩固扶手",
+    "tags": ["MOB-2", "MOB-3"],
+    "code": "C",
+    "risk": "高",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·扶手",
+    "why": "樓梯建議雙側裝穩固扶手。（補助以照管中心核定為準·撥1966）",
+    "callout": "廳-18"
+  }, {
+    "id": "LR-19",
+    "item": "騎樓/室外通道防滑",
+    "tags": ["全體", "MOB-3"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購／③",
+    "subsidy": "居家無障礙改善·防滑",
+    "why": "騎樓與室外通道做防滑。（補助以照管中心核定為準·撥1966）",
+    "callout": "廳-19"
+  }]
+};
+
+// 標註圖：各規則在示意圖上的座標
+const POS = {
+  "BR-01": [222, 118],
+  "BR-02": [250, 68],
+  "BR-03": [92, 72],
+  "BR-04": [150, 158],
+  "BR-05": [40, 150],
+  "BR-06": [33, 118],
+  "BR-07": [236, 92],
+  "BR-08": [210, 132],
+  "BR-09": [258, 128],
+  "BR-10": [150, 35],
+  "BR-11": [198, 108],
+  "BR-12": [112, 150],
+  "BR-13": [266, 52],
+  "BR-14": [70, 108],
+  "BR-15": [52, 100],
+  "BR-16": [78, 72],
+  "BR-17": [210, 162],
+  "BD-01": [92, 138],
+  "BD-02": [48, 150],
+  "BD-03": [205, 55],
+  "BD-04": [40, 95],
+  "BD-05": [60, 88],
+  "BD-06": [250, 88],
+  "BD-07": [155, 38],
+  "BD-08": [212, 128],
+  "BD-09": [33, 118],
+  "BD-10": [150, 165],
+  "BD-11": [140, 150],
+  "BD-12": [218, 138],
+  "KT-01": [88, 72],
+  "KT-02": [180, 74],
+  "KT-03": [150, 35],
+  "KT-04": [105, 48],
+  "KT-05": [232, 80],
+  "KT-06": [190, 50],
+  "KT-07": [150, 158],
+  "KT-08": [90, 150],
+  "LR-01": [40, 150],
+  "LR-02": [100, 135],
+  "LR-03": [165, 38],
+  "LR-04": [232, 68],
+  "LR-05": [205, 52],
+  "LR-06": [140, 42],
+  "LR-07": [105, 165],
+  "LR-08": [180, 52],
+  "LR-09": [88, 70],
+  "LR-10": [125, 118],
+  "LR-11": [148, 150],
+  "LR-12": [235, 90],
+  "LR-13": [268, 58],
+  "LR-14": [264, 110],
+  "LR-15": [58, 100],
+  "LR-16": [272, 140],
+  "LR-17": [256, 150],
+  "LR-18": [248, 88],
+  "LR-19": [30, 172]
+};
+const riskHex = r => r === "高" ? "#f43f5e" : r === "中" ? "#f59e0b" : "#10b981";
+function Fixtures({
+  space
+}) {
+  const L = (x, y, t) => /*#__PURE__*/_jsx("text", {
+    x: x,
+    y: y,
+    fontSize: "9",
+    fill: "#78716c",
+    textAnchor: "middle",
+    children: t
+  });
+  const base = /*#__PURE__*/_jsx("rect", {
+    x: "15",
+    y: "20",
+    width: "270",
+    height: "170",
+    rx: "10",
+    fill: "#fafaf9",
+    stroke: "#d6d3d1",
+    strokeWidth: "1.5"
+  });
+  if (space === "bath") return /*#__PURE__*/_jsxs("g", {
+    children: [base, /*#__PURE__*/_jsx("rect", {
+      x: "15",
+      y: "132",
+      width: "11",
+      height: "40",
+      fill: "#e7e5e4",
+      stroke: "#a8a29e"
+    }), L(40, 175, "門"), /*#__PURE__*/_jsx("rect", {
+      x: "192",
+      y: "103",
+      width: "44",
+      height: "52",
+      rx: "12",
+      fill: "#e0f2fe",
+      stroke: "#7dd3fc"
+    }), L(214, 175, "馬桶"), /*#__PURE__*/_jsx("rect", {
+      x: "60",
+      y: "56",
+      width: "60",
+      height: "26",
+      rx: "4",
+      fill: "#e0f2fe",
+      stroke: "#7dd3fc"
+    }), L(90, 50, "面盆"), /*#__PURE__*/_jsx("rect", {
+      x: "215",
+      y: "40",
+      width: "64",
+      height: "56",
+      rx: "4",
+      fill: "#ecfeff",
+      stroke: "#67e8f9",
+      strokeDasharray: "4 3"
+    }), L(247, 36, "淋浴")]
+  });
+  if (space === "bed") return /*#__PURE__*/_jsxs("g", {
+    children: [base, /*#__PURE__*/_jsx("rect", {
+      x: "70",
+      y: "118",
+      width: "120",
+      height: "62",
+      rx: "8",
+      fill: "#ede9fe",
+      stroke: "#c4b5fd"
+    }), L(130, 152, "床"), /*#__PURE__*/_jsx("rect", {
+      x: "120",
+      y: "22",
+      width: "72",
+      height: "11",
+      fill: "#e0f2fe",
+      stroke: "#7dd3fc"
+    }), L(156, 18, "窗"), /*#__PURE__*/_jsx("rect", {
+      x: "15",
+      y: "108",
+      width: "11",
+      height: "40",
+      fill: "#e7e5e4",
+      stroke: "#a8a29e"
+    }), L(40, 175, "門"), /*#__PURE__*/_jsx("rect", {
+      x: "200",
+      y: "116",
+      width: "32",
+      height: "30",
+      rx: "3",
+      fill: "#f5f5f4",
+      stroke: "#d6d3d1"
+    }), /*#__PURE__*/_jsx("rect", {
+      x: "246",
+      y: "70",
+      width: "9",
+      height: "40",
+      fill: "#e0f2fe",
+      stroke: "#7dd3fc"
+    }), L(250, 124, "鏡")]
+  });
+  if (space === "kit") return /*#__PURE__*/_jsxs("g", {
+    children: [base, /*#__PURE__*/_jsx("rect", {
+      x: "40",
+      y: "60",
+      width: "222",
+      height: "30",
+      rx: "4",
+      fill: "#f5f5f4",
+      stroke: "#d6d3d1"
+    }), L(150, 105, "流理台"), /*#__PURE__*/_jsx("rect", {
+      x: "160",
+      y: "62",
+      width: "40",
+      height: "26",
+      rx: "3",
+      fill: "#fee2e2",
+      stroke: "#fca5a5"
+    }), L(180, 100, "爐"), /*#__PURE__*/_jsx("rect", {
+      x: "62",
+      y: "40",
+      width: "90",
+      height: "16",
+      rx: "3",
+      fill: "#ede9fe",
+      stroke: "#c4b5fd"
+    }), L(107, 36, "櫥櫃")]
+  });
+  return /*#__PURE__*/_jsxs("g", {
+    children: [base, /*#__PURE__*/_jsx("rect", {
+      x: "55",
+      y: "112",
+      width: "92",
+      height: "42",
+      rx: "8",
+      fill: "#ede9fe",
+      stroke: "#c4b5fd"
+    }), L(101, 137, "沙發"), /*#__PURE__*/_jsx("rect", {
+      x: "60",
+      y: "55",
+      width: "55",
+      height: "9",
+      fill: "#44403c"
+    }), L(87, 50, "電視"), /*#__PURE__*/_jsx("rect", {
+      x: "138",
+      y: "22",
+      width: "60",
+      height: "11",
+      fill: "#e0f2fe",
+      stroke: "#7dd3fc"
+    }), L(168, 18, "窗"), /*#__PURE__*/_jsx("rect", {
+      x: "15",
+      y: "135",
+      width: "11",
+      height: "40",
+      fill: "#e7e5e4",
+      stroke: "#a8a29e"
+    }), L(40, 178, "門"), /*#__PURE__*/_jsx("rect", {
+      x: "118",
+      y: "144",
+      width: "52",
+      height: "20",
+      rx: "4",
+      fill: "#f5f5f4",
+      stroke: "#d6d3d1"
+    }), /*#__PURE__*/_jsx("rect", {
+      x: "248",
+      y: "150",
+      width: "38",
+      height: "12",
+      fill: "#f5f5f4",
+      stroke: "#d6d3d1"
+    }), /*#__PURE__*/_jsx("rect", {
+      x: "255",
+      y: "130",
+      width: "31",
+      height: "12",
+      fill: "#f5f5f4",
+      stroke: "#d6d3d1"
+    }), /*#__PURE__*/_jsx("rect", {
+      x: "262",
+      y: "110",
+      width: "24",
+      height: "12",
+      fill: "#f5f5f4",
+      stroke: "#d6d3d1"
+    }), /*#__PURE__*/_jsx("rect", {
+      x: "269",
+      y: "90",
+      width: "17",
+      height: "12",
+      fill: "#f5f5f4",
+      stroke: "#d6d3d1"
+    }), L(266, 78, "樓梯")]
+  });
+}
+function RoomDiagram({
+  space,
+  findings
+}) {
+  return /*#__PURE__*/_jsxs("svg", {
+    viewBox: "0 0 300 200",
+    style: {
+      width: "100%",
+      fontFamily: FONT
+    },
+    children: [/*#__PURE__*/_jsx(Fixtures, {
+      space: space
+    }), findings.map((r, i) => {
+      const [x, y] = POS[r.id] || [150, 100];
+      return /*#__PURE__*/_jsxs("g", {
+        children: [/*#__PURE__*/_jsx("circle", {
+          cx: x,
+          cy: y,
+          r: "11",
+          fill: riskHex(r.risk),
+          stroke: "#fff",
+          strokeWidth: "2"
+        }), /*#__PURE__*/_jsx("text", {
+          x: x,
+          y: y,
+          dy: "4",
+          textAnchor: "middle",
+          fontSize: "12",
+          fontWeight: "700",
+          fill: "#fff",
+          children: i + 1
+        })]
+      }, r.id);
+    })]
+  });
+}
+function deriveProfile(a) {
+  const p = new Set();
+  const walk = {
+    自如: "MOB-1",
+    需扶牆家具: "MOB-2",
+    拐杖助行器: "MOB-2",
+    輪椅: "MOB-5",
+    幾乎臥床: "MOB-7"
+  };
+  if (a.walk) p.add(walk[a.walk]);
+  if (a.fall?.length && !a.fall.includes("否")) p.add("MOB-3");
+  if (a.fall?.includes("上下床起身無力") || a.fall?.includes("上下床無扶手")) p.add("MOB-4");
+  if (a.rise === "有點" || a.rise === "需協助") p.add("MOB-4");
+  if (a.stand === "勉強" || a.stand === "無法") p.add("MOB-6");
+  if (a.toilet === "找不到廁所") p.add("BPSD-MIS");
+  if (a.toilet === "疾病或行動") p.add("ADL-1");
+  if (a.vision === "需更亮或略糊") p.add("VIS-2");
+  if (a.vision === "看不清") {
+    p.add("VIS-3");
+    p.add("VIS-2");
+  }
+  const hear = Math.max(a.hearTalk === "偶爾" ? 2 : a.hearTalk === "經常" ? 3 : 1, a.hearAlarm === "不一定" ? 2 : a.hearAlarm === "聽不到" ? 3 : 1);
+  if (hear === 2) p.add("HEAR-2");
+  if (hear === 3) p.add("HEAR-3");
+  const cogYes = ["cog1", "cog2", "cog3", "cog4"].filter(k => a[k] === "是").length;
+  if (cogYes >= 2) p.add("COG-2");
+  const adl = [a.adlBath, a.adlToilet, a.adlOut];
+  const full = adl.filter(x => x === "完全依賴").length;
+  if (full >= 2) p.add("ADL-2");else if (adl.some(x => x === "部分")) p.add("ADL-1");
+  if (a.dementia === "已確診") {
+    p.add("DEM-2");
+    p.add("DEM");
+  } else if (a.dementia === "疑似" || cogYes >= 2) {
+    p.add("DEM-1");
+    p.add("DEM");
+  }
+  (a.bpsd || []).forEach(b => p.add(b));
+  if (a.alone === "白天獨處" || a.alone === "獨居") p.add("LIV-ALONE");
+  if (a.kitchen?.length && !a.kitchen.includes("否")) p.add("BPSD-FAL");
+  return p;
+}
+function boostedSpaces(a) {
+  const s = new Set();
+  (a.fall || []).forEach(f => {
+    if (f.includes("浴廁")) s.add("bath");
+    if (f.includes("出入口")) s.add("liv");
+    if (f.includes("上下床")) s.add("bed");
+  });
+  if (a.toilet && a.toilet !== "否") s.add("bath");
+  if (a.kitchen?.length && !a.kitchen.includes("否")) s.add("kit");
+  return s;
+}
+const tagMatch = (r, p) => r.tags.some(t => t === "全體" || p.has(t));
+const RISK_ORDER = {
+  高: 0,
+  中: 1,
+  低: 2
+};
+const codeRank = c => c.startsWith("A") ? 0 : c.startsWith("B") ? 1 : 2;
+const cleanWhy = r => r.subsidy ? r.why.replace("（補助以照管中心核定為準·撥1966）", "") : r.why;
+function UI() {
+  const [step, setStep] = useState(0);
+  const [agree, setAgree] = useState(false);
+  const [a, setA] = useState({
+    fall: [],
+    bpsd: [],
+    kitchen: []
+  });
+  const [county, setCounty] = useState("");
+  const [confirms, setConfirms] = useState({});
+  const [photos, setPhotos] = useState({});
+  const [fb, setFb] = useState({
+    clarity: 0,
+    willAct: "",
+    comment: "",
+    sending: false,
+    sent: false
+  });
+  const profile = useMemo(() => deriveProfile(a), [a]);
+  const boosted = useMemo(() => boostedSpaces(a), [a]);
+  const triggered = sk => RULES[sk].filter(r => tagMatch(r, profile));
+  const findings = useMemo(() => {
+    const out = {};
+    SPACES.forEach(({
+      key
+    }) => {
+      out[key] = RULES[key].filter(r => tagMatch(r, profile)).filter(r => confirms[`${key}:${r.id}`] !== "是").sort((x, y) => RISK_ORDER[x.risk] - RISK_ORDER[y.risk] || codeRank(x.code) - codeRank(y.code));
+    });
+    return out;
+  }, [confirms, profile]);
+  const counts = useMemo(() => SPACES.map(s => findings[s.key].length), [findings]);
+  const highTotal = useMemo(() => SPACES.reduce((n, s) => n + findings[s.key].filter(x => x.risk === "高").length, 0), [findings]);
+  async function submitFeedback() {
+    if (!FEEDBACK.formActionUrl || FEEDBACK.formActionUrl.includes("XXXX")) {
+      alert("尚未設定 Google 表單，請見程式碼上方 FEEDBACK 設定說明。");
+      return;
+    }
+    setFb(s => ({
+      ...s,
+      sending: true
+    }));
+    const e = FEEDBACK.entries;
+    const body = new URLSearchParams();
+    body.append(e.county, county || "未填");
+    body.append(e.profile, [...profile].join(" ") || "（無）");
+    body.append(e.counts, SPACES.map((s, i) => `${s.name}:${counts[i]}`).join("、"));
+    body.append(e.highRisk, String(highTotal));
+    body.append(e.clarity, String(fb.clarity || ""));
+    body.append(e.willAct, fb.willAct || "");
+    body.append(e.comment, fb.comment || "");
+    try {
+      await fetch(FEEDBACK.formActionUrl, {
+        method: "POST",
+        mode: "no-cors",
+        headers: {
+          "Content-Type": "application/x-www-form-urlencoded"
+        },
+        body: body.toString()
+      });
+      setFb(s => ({
+        ...s,
+        sent: true,
+        sending: false
+      }));
+    } catch (err) {
+      setFb(s => ({
+        ...s,
+        sending: false
+      }));
+      alert("送出失敗，請稍後再試。");
+    }
+  }
+  const set = (k, v) => setA(s => ({
+    ...s,
+    [k]: v
+  }));
+  const toggle = (k, v) => setA(s => {
+    const c = new Set(s[k] || []);
+    c.has(v) ? c.delete(v) : c.add(v);
+    return {
+      ...s,
+      [k]: [...c]
+    };
+  });
+  const Radio = ({
+    k,
+    opts
+  }) => /*#__PURE__*/_jsx("div", {
+    className: "flex flex-wrap gap-2 mt-2",
+    children: opts.map(o => /*#__PURE__*/_jsx("button", {
+      onClick: () => set(k, o),
+      className: "px-3 py-2 rounded-xl border text-sm transition " + (a[k] === o ? "bg-teal-600 border-teal-600 text-white" : "bg-white border-stone-300 text-stone-700 hover:border-teal-400"),
+      children: o
+    }, o))
+  });
+  const Multi = ({
+    k,
+    opts
+  }) => /*#__PURE__*/_jsx("div", {
+    className: "flex flex-wrap gap-2 mt-2",
+    children: opts.map(o => {
+      const on = (a[k] || []).includes(o);
+      return /*#__PURE__*/_jsx("button", {
+        onClick: () => toggle(k, o),
+        className: "px-3 py-2 rounded-xl border text-sm transition " + (on ? "bg-amber-500 border-amber-500 text-white" : "bg-white border-stone-300 text-stone-700 hover:border-amber-400"),
+        children: o
+      }, o);
+    })
+  });
+  const Q = ({
+    n,
+    children
+  }) => /*#__PURE__*/_jsxs("div", {
+    className: "mb-5",
+    children: [/*#__PURE__*/_jsx("p", {
+      className: "font-medium text-stone-800 leading-relaxed",
+      children: n
+    }), children]
+  });
+  const Steps = () => /*#__PURE__*/_jsx("div", {
+    className: "flex items-center gap-1 mb-6 text-xs flex-wrap",
+    children: ["使用說明", "健康自評", "居家空間", "評估報告"].map((s, i) => /*#__PURE__*/_jsxs(React.Fragment, {
+      children: [/*#__PURE__*/_jsxs("span", {
+        className: "px-2.5 py-1 rounded-full " + (i === step ? "bg-teal-600 text-white" : i < step ? "bg-teal-100 text-teal-800" : "bg-stone-200 text-stone-500"),
+        children: [i + 1, ". ", s]
+      }), i < 3 && /*#__PURE__*/_jsx("span", {
+        className: "text-stone-300",
+        children: "—"
+      })]
+    }, s))
+  });
+  const riskDot = r => /*#__PURE__*/_jsx("span", {
+    className: "inline-block w-2.5 h-2.5 rounded-full",
+    style: {
+      background: riskHex(r)
+    }
+  });
+  const codeChip = c => /*#__PURE__*/_jsx("span", {
+    className: "text-xs px-1.5 py-0.5 rounded " + (c.startsWith("A") ? "bg-rose-100 text-rose-700" : c.startsWith("B") ? "bg-amber-100 text-amber-800" : "bg-sky-100 text-sky-700"),
+    children: c
+  });
+  return /*#__PURE__*/_jsxs("div", {
+    style: {
+      fontFamily: FONT
+    },
+    className: "bg-stone-50 min-h-screen",
+    children: [/*#__PURE__*/_jsx("style", {
+      children: `@media print{.no-print{display:none!important}}`
+    }), /*#__PURE__*/_jsxs("div", {
+      className: "max-w-2xl mx-auto p-4 text-stone-800",
+      children: [/*#__PURE__*/_jsxs("div", {
+        className: "flex items-baseline justify-between mb-1 no-print",
+        children: [/*#__PURE__*/_jsx("h1", {
+          className: "text-xl font-semibold text-teal-800",
+          children: "居家友善自評"
+        }), /*#__PURE__*/_jsx("span", {
+          className: "text-xs text-stone-400",
+          children: "MVP 原型 v2"
+        })]
+      }), /*#__PURE__*/_jsx("p", {
+        className: "text-xs text-stone-400 mb-4 no-print",
+        children: "高齡／失智友善居家環境 · 申請前自我健檢"
+      }), /*#__PURE__*/_jsx("div", {
+        className: "no-print",
+        children: /*#__PURE__*/_jsx(Steps, {})
+      }), step === 0 && /*#__PURE__*/_jsxs("div", {
+        className: "bg-white rounded-2xl border border-stone-200 p-5",
+        children: [/*#__PURE__*/_jsx("h2", {
+          className: "font-semibold text-lg mb-3",
+          children: "開始前，請先了解"
+        }), /*#__PURE__*/_jsxs("div", {
+          className: "space-y-3 text-sm text-stone-600 leading-relaxed",
+          children: [/*#__PURE__*/_jsxs("p", {
+            children: [/*#__PURE__*/_jsx("b", {
+              className: "text-stone-800",
+              children: "這份報告能幫你："
+            }), "在打 1966 申請長照前，先看懂家裡哪裡危險、哪些可能符合補助、該準備什麼。"]
+          }), /*#__PURE__*/_jsxs("p", {
+            children: [/*#__PURE__*/_jsx("b", {
+              className: "text-stone-800",
+              children: "怎麼準備照片："
+            }), "每個空間拍 2 張——一張廣角看整體動線，一張近拍重點。光線充足、不逆光。"]
+          }), /*#__PURE__*/_jsxs("div", {
+            className: "bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900",
+            children: [/*#__PURE__*/_jsx("b", {
+              children: "免責聲明："
+            }), "本自評為居家環境配對之用，非醫療診斷，也不能取代長照官方評估報告書。補助以各縣市照管中心核定為準，請撥 1966。若對長輩健康有疑慮，請洽醫師。"]
+          })]
+        }), /*#__PURE__*/_jsxs("label", {
+          className: "flex items-center gap-2 mt-4 text-sm",
+          children: [/*#__PURE__*/_jsx("input", {
+            type: "checkbox",
+            checked: agree,
+            onChange: e => setAgree(e.target.checked),
+            className: "w-4 h-4 accent-teal-600"
+          }), "我已閱讀並了解上述說明"]
+        }), /*#__PURE__*/_jsx("button", {
+          disabled: !agree,
+          onClick: () => setStep(1),
+          className: "mt-4 w-full py-3 rounded-xl font-medium " + (agree ? "bg-teal-600 text-white" : "bg-stone-200 text-stone-400"),
+          children: "開始自評"
+        })]
+      }), step === 1 && /*#__PURE__*/_jsxs("div", {
+        className: "bg-white rounded-2xl border border-stone-200 p-5",
+        children: [/*#__PURE__*/_jsx("h2", {
+          className: "font-semibold text-lg mb-1",
+          children: "第二層 · 健康自評"
+        }), /*#__PURE__*/_jsx("p", {
+          className: "text-xs text-stone-400 mb-4",
+          children: "由家屬代填，用於配對居家環境，非診斷。"
+        }), /*#__PURE__*/_jsx("p", {
+          className: "font-semibold text-teal-700 mb-2",
+          children: "A. 過去半年實際狀況"
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "A1 是否跌倒？（可複選原因）",
+          children: /*#__PURE__*/_jsx(Multi, {
+            k: "fall",
+            opts: ["浴廁門檻絆倒", "出入口門檻絆倒", "浴廁滑倒無扶手", "上下床起身無力", "上下床無扶手", "其他", "否"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "A2 是否來不及上廁所？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "toilet",
+            opts: ["否", "找不到廁所", "疾病或行動"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "A4 廚房是否發生不安全事件？（可複選）",
+          children: /*#__PURE__*/_jsx(Multi, {
+            k: "kitchen",
+            opts: ["忘記關瓦斯", "燙傷", "持刀具傷人", "否"]
+          })
+        }), /*#__PURE__*/_jsx("p", {
+          className: "font-semibold text-teal-700 mb-2 mt-6",
+          children: "B. 能力面向"
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "B1 室內走動方式",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "walk",
+            opts: ["自如", "需扶牆家具", "拐杖助行器", "輪椅", "幾乎臥床"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "B2 從椅子或馬桶起身會吃力嗎？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "rise",
+            opts: ["不會", "有點", "需協助"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "B3 能連續站立洗澡數分鐘？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "stand",
+            opts: ["可", "勉強", "無法"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "B4 一般室內光下看清物品與臉孔？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "vision",
+            opts: ["清楚", "需更亮或略糊", "看不清"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "B5 交談需重複或大聲？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "hearTalk",
+            opts: ["不需", "偶爾", "經常"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "B6 可能聽不到門鈴、警報、來電？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "hearAlarm",
+            opts: ["可聽到", "不一定", "聽不到"]
+          })
+        }), /*#__PURE__*/_jsx("p", {
+          className: "text-sm text-stone-500 mt-2 mb-1",
+          children: "B7 認知（請回答是／否）"
+        }), [["cog1", "記性或判斷力比一年前明顯變差？"], ["cog2", "會重複問同樣問題、忘記剛發生的事？"], ["cog3", "操作家電（瓦斯爐、遙控器）變困難？"], ["cog4", "在熟悉環境會迷路或搞不清日期？"]].map(([k, t]) => /*#__PURE__*/_jsx(Q, {
+          n: t,
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: k,
+            opts: ["是", "否"]
+          })
+        }, k)), /*#__PURE__*/_jsx(Q, {
+          n: "B8 洗澡需協助？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "adlBath",
+            opts: ["自理", "部分", "完全依賴"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "B9 如廁需協助？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "adlToilet",
+            opts: ["自理", "部分", "完全依賴"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "B10 能自行外出購物或處理金錢？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "adlOut",
+            opts: ["可", "部分", "不能"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "B11 是否經醫師診斷失智？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "dementia",
+            opts: ["否", "疑似", "已確診"]
+          })
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "B12 近一個月情形（可複選）",
+          children: /*#__PURE__*/_jsx("div", {
+            className: "flex flex-wrap gap-2 mt-2",
+            children: [["BPSD-WAN", "想往外走/走失"], ["BPSD-SUN", "傍晚特別躁動"], ["BPSD-AGI", "易激動抗拒"], ["BPSD-MIS", "認不得家人/鏡中自己"], ["BPSD-FAL", "危險警覺下降"]].map(([v, t]) => {
+              const on = (a.bpsd || []).includes(v);
+              return /*#__PURE__*/_jsx("button", {
+                onClick: () => toggle("bpsd", v),
+                className: "px-3 py-2 rounded-xl border text-sm " + (on ? "bg-amber-500 border-amber-500 text-white" : "bg-white border-stone-300 hover:border-amber-400"),
+                children: t
+              }, v);
+            })
+          })
+        }), /*#__PURE__*/_jsx("p", {
+          className: "font-semibold text-teal-700 mb-2 mt-6",
+          children: "C. 居住情境"
+        }), /*#__PURE__*/_jsx(Q, {
+          n: "C1 長輩白天是否常獨自在家？",
+          children: /*#__PURE__*/_jsx(Radio, {
+            k: "alone",
+            opts: ["有人常在", "白天獨處", "獨居"]
+          })
+        }), /*#__PURE__*/_jsxs("div", {
+          className: "flex gap-2 mt-4",
+          children: [/*#__PURE__*/_jsx("button", {
+            onClick: () => setStep(0),
+            className: "px-4 py-3 rounded-xl border border-stone-300",
+            children: "上一步"
+          }), /*#__PURE__*/_jsx("button", {
+            onClick: () => setStep(2),
+            className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium",
+            children: "下一步：居家空間"
+          })]
+        })]
+      }), step === 2 && /*#__PURE__*/_jsxs("div", {
+        className: "space-y-4",
+        children: [/*#__PURE__*/_jsxs("div", {
+          className: "bg-white rounded-2xl border border-stone-200 p-5",
+          children: [/*#__PURE__*/_jsx("h2", {
+            className: "font-semibold text-lg mb-1",
+            children: "第三層 · 居家空間現況"
+          }), /*#__PURE__*/_jsx("p", {
+            className: "text-xs text-stone-400 mb-3",
+            children: "以下每個空間只列出「與這位長輩有關」的檢查項。"
+          }), /*#__PURE__*/_jsx("p", {
+            className: "text-sm font-medium mb-1",
+            children: "房屋所在縣市"
+          }), /*#__PURE__*/_jsxs("select", {
+            value: county,
+            onChange: e => setCounty(e.target.value),
+            className: "w-full border border-stone-300 rounded-xl px-3 py-2 text-sm",
+            children: [/*#__PURE__*/_jsx("option", {
+              value: "",
+              children: "請選擇"
+            }), COUNTIES.map(c => /*#__PURE__*/_jsx("option", {
+              children: c
+            }, c))]
+          }), /*#__PURE__*/_jsxs("div", {
+            className: "mt-3 flex flex-wrap gap-1 items-center",
+            children: [/*#__PURE__*/_jsx("span", {
+              className: "text-xs text-stone-400 mr-1",
+              children: "已推導能力剖面："
+            }), [...profile].length ? [...profile].map(t => /*#__PURE__*/_jsx("span", {
+              className: "text-xs px-1.5 py-0.5 rounded bg-teal-50 text-teal-700",
+              children: t
+            }, t)) : /*#__PURE__*/_jsx("span", {
+              className: "text-xs text-stone-400",
+              children: "（依您的回答動態產生）"
+            })]
+          })]
+        }), SPACES.map(({
+          key,
+          name
+        }) => {
+          const list = triggered(key);
+          const hot = boosted.has(key);
+          return /*#__PURE__*/_jsxs("div", {
+            className: "bg-white rounded-2xl border border-stone-200 p-5",
+            children: [/*#__PURE__*/_jsxs("div", {
+              className: "flex items-center justify-between mb-1",
+              children: [/*#__PURE__*/_jsx("h3", {
+                className: "font-semibold",
+                children: name
+              }), hot && /*#__PURE__*/_jsx("span", {
+                className: "text-xs px-2 py-0.5 rounded-full bg-rose-100 text-rose-700",
+                children: "依事件 · 優先檢視"
+              })]
+            }), /*#__PURE__*/_jsxs("label", {
+              className: "block text-sm text-stone-500 mt-2 mb-2",
+              children: ["上傳照片（最多 2 張，示範用）", /*#__PURE__*/_jsx("input", {
+                type: "file",
+                accept: "image/*",
+                multiple: true,
+                onChange: e => setPhotos(p => ({
+                  ...p,
+                  [key]: Array.from(e.target.files).slice(0, 2).map(f => f.name)
+                })),
+                className: "block mt-1 text-xs text-stone-500"
+              })]
+            }), photos[key]?.length > 0 && /*#__PURE__*/_jsxs("p", {
+              className: "text-xs text-emerald-600 mb-2",
+              children: ["已選 ", photos[key].length, " 張：", photos[key].join("、"), "（原型改以下方確認題模擬辨識）"]
+            }), list.length === 0 ? /*#__PURE__*/_jsx("p", {
+              className: "text-sm text-emerald-600",
+              children: "依目前能力剖面，此空間暫無需特別檢視。"
+            }) : /*#__PURE__*/_jsxs("div", {
+              className: "space-y-2 mt-1",
+              children: [/*#__PURE__*/_jsxs("p", {
+                className: "text-xs text-stone-400",
+                children: ["請確認以下 ", list.length, " 項家中是否已符合："]
+              }), list.map(r => {
+                const ck = `${key}:${r.id}`;
+                return /*#__PURE__*/_jsxs("div", {
+                  className: "border border-stone-200 rounded-xl p-3",
+                  children: [/*#__PURE__*/_jsxs("div", {
+                    className: "flex items-center gap-2 flex-wrap",
+                    children: [riskDot(r.risk), /*#__PURE__*/_jsx("span", {
+                      className: "font-medium text-sm",
+                      children: r.item
+                    }), codeChip(r.code)]
+                  }), /*#__PURE__*/_jsx("div", {
+                    className: "flex gap-2 mt-2",
+                    children: ["是", "否", "不確定"].map(o => /*#__PURE__*/_jsx("button", {
+                      onClick: () => setConfirms(c => ({
+                        ...c,
+                        [ck]: o
+                      })),
+                      className: "px-3 py-1.5 rounded-lg text-sm border " + (confirms[ck] === o ? o === "是" ? "bg-emerald-500 border-emerald-500 text-white" : "bg-stone-700 border-stone-700 text-white" : "bg-white border-stone-300 text-stone-600"),
+                      children: o
+                    }, o))
+                  })]
+                }, r.id);
+              })]
+            })]
+          }, key);
+        }), /*#__PURE__*/_jsxs("div", {
+          className: "flex gap-2",
+          children: [/*#__PURE__*/_jsx("button", {
+            onClick: () => setStep(1),
+            className: "px-4 py-3 rounded-xl border border-stone-300 bg-white",
+            children: "上一步"
+          }), /*#__PURE__*/_jsx("button", {
+            onClick: () => setStep(3),
+            className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium",
+            children: "產出評估報告"
+          })]
+        })]
+      }), step === 3 && /*#__PURE__*/_jsxs("div", {
+        className: "space-y-4",
+        children: [/*#__PURE__*/_jsxs("div", {
+          className: "bg-white rounded-2xl border border-stone-200 p-5",
+          children: [/*#__PURE__*/_jsx("h2", {
+            className: "font-semibold text-lg mb-2",
+            children: "居家友善環境評估報告"
+          }), /*#__PURE__*/_jsxs("p", {
+            className: "text-sm text-stone-500 mb-3",
+            children: ["所在地區：", county || "未填", "\u3000·\u3000報告為申請前自評，非官方評估報告書。"]
+          }), /*#__PURE__*/_jsx("div", {
+            className: "grid grid-cols-2 gap-3",
+            children: SPACES.map(({
+              key,
+              name
+            }) => {
+              const f = findings[key];
+              const high = f.filter(x => x.risk === "高").length;
+              const tone = high ? "bg-rose-50 text-rose-700" : f.length ? "bg-amber-50 text-amber-800" : "bg-emerald-50 text-emerald-700";
+              return /*#__PURE__*/_jsxs("div", {
+                className: "rounded-xl p-3 " + tone,
+                children: [/*#__PURE__*/_jsx("p", {
+                  className: "font-medium text-sm",
+                  children: name
+                }), /*#__PURE__*/_jsx("p", {
+                  className: "text-xs mt-1",
+                  children: f.length ? `${f.length} 項待改善（高風險 ${high}）` : "暫無待改善"
+                })]
+              }, key);
+            })
+          })]
+        }), SPACES.map(({
+          key,
+          name
+        }) => {
+          const f = findings[key];
+          if (!f.length) return null;
+          return /*#__PURE__*/_jsxs("div", {
+            className: "bg-white rounded-2xl border border-stone-200 p-5",
+            children: [/*#__PURE__*/_jsxs("h3", {
+              className: "font-semibold mb-3",
+              children: [name, "\u3000", /*#__PURE__*/_jsxs("span", {
+                className: "text-xs text-stone-400",
+                children: [f.length, " 項建議"]
+              })]
+            }), /*#__PURE__*/_jsxs("div", {
+              className: "rounded-xl border border-stone-200 bg-stone-50 p-2 mb-3",
+              children: [/*#__PURE__*/_jsx(RoomDiagram, {
+                space: key,
+                findings: f
+              }), /*#__PURE__*/_jsx("p", {
+                className: "text-xs text-stone-400 text-center mt-1",
+                children: "模擬標註圖：圈號對應下方編號 · 紅高／黃中／綠低風險"
+              })]
+            }), /*#__PURE__*/_jsx("div", {
+              className: "space-y-3",
+              children: f.map((r, i) => /*#__PURE__*/_jsxs("div", {
+                className: "flex gap-3",
+                children: [/*#__PURE__*/_jsx("div", {
+                  className: "shrink-0 w-7 h-7 rounded-full text-white text-sm flex items-center justify-center",
+                  style: {
+                    background: riskHex(r.risk)
+                  },
+                  children: i + 1
+                }), /*#__PURE__*/_jsxs("div", {
+                  className: "flex-1",
+                  children: [/*#__PURE__*/_jsxs("div", {
+                    className: "flex items-center gap-2 flex-wrap",
+                    children: [/*#__PURE__*/_jsx("span", {
+                      className: "font-medium text-sm",
+                      children: r.item
+                    }), codeChip(r.code), /*#__PURE__*/_jsx("span", {
+                      className: "text-xs px-1.5 py-0.5 rounded bg-stone-100 text-stone-600",
+                      children: r.triage
+                    })]
+                  }), /*#__PURE__*/_jsx("p", {
+                    className: "text-sm text-stone-600 mt-1 leading-relaxed",
+                    children: cleanWhy(r)
+                  }), r.subsidy && /*#__PURE__*/_jsxs("p", {
+                    className: "text-xs text-sky-700 mt-1",
+                    children: ["可能符合長照 3.0：", r.subsidy, "（以照管中心核定為準 · 撥 1966）"]
+                  })]
+                })]
+              }, r.id))
+            })]
+          }, key);
+        }), /*#__PURE__*/_jsxs("div", {
+          className: "bg-white rounded-2xl border border-stone-200 p-5",
+          children: [/*#__PURE__*/_jsx("h3", {
+            className: "font-semibold mb-2",
+            children: "在地專業服務資源"
+          }), /*#__PURE__*/_jsxs("p", {
+            className: "text-sm text-stone-600 leading-relaxed",
+            children: [county || "您所在縣市", "長期照顧管理中心（撥 1966 轉介）", /*#__PURE__*/_jsx("br", {}), "長照特約輔具／無障礙改善廠商（可採代償墊付，只付自付額）", /*#__PURE__*/_jsx("br", {}), "職能治療所 · 居家安全評估"]
+          }), /*#__PURE__*/_jsx("p", {
+            className: "text-xs text-stone-400 mt-2",
+            children: "＊名單由後台依縣市維護，此為示範。"
+          })]
+        }), /*#__PURE__*/_jsx("div", {
+          className: "bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-500 leading-relaxed",
+          children: "本報告為居家環境配對之用，非醫療診斷、非長照官方評估報告書；補助項目與額度以各縣市照管中心核定為準。若對長輩健康有疑慮，請洽醫師或撥 1966。"
+        }), /*#__PURE__*/_jsxs("div", {
+          className: "bg-white rounded-2xl border border-stone-200 p-5 no-print",
+          children: [/*#__PURE__*/_jsx("h3", {
+            className: "font-semibold mb-3",
+            children: "幫我們改進這份報告"
+          }), fb.sent ? /*#__PURE__*/_jsx("p", {
+            className: "text-emerald-600 text-sm",
+            children: "已送出，謝謝你的回饋！"
+          }) : /*#__PURE__*/_jsxs(_Fragment, {
+            children: [/*#__PURE__*/_jsx("p", {
+              className: "text-sm text-stone-700 mb-1",
+              children: "這份報告好不好懂？（1 很難懂 ～ 5 很清楚）"
+            }), /*#__PURE__*/_jsx("div", {
+              className: "flex gap-2 mb-4",
+              children: [1, 2, 3, 4, 5].map(n => /*#__PURE__*/_jsx("button", {
+                onClick: () => setFb(s => ({
+                  ...s,
+                  clarity: n
+                })),
+                className: "w-10 h-10 rounded-full border " + (fb.clarity === n ? "bg-teal-600 text-white border-teal-600" : "bg-white border-stone-300 text-stone-600"),
+                children: n
+              }, n))
+            }), /*#__PURE__*/_jsx("p", {
+              className: "text-sm text-stone-700 mb-1",
+              children: "看完後，你會想照著改善嗎？"
+            }), /*#__PURE__*/_jsx("div", {
+              className: "flex gap-2 mb-4",
+              children: ["會", "也許", "不會"].map(o => /*#__PURE__*/_jsx("button", {
+                onClick: () => setFb(s => ({
+                  ...s,
+                  willAct: o
+                })),
+                className: "px-4 py-2 rounded-xl border " + (fb.willAct === o ? "bg-teal-600 text-white border-teal-600" : "bg-white border-stone-300 text-stone-600"),
+                children: o
+              }, o))
+            }), /*#__PURE__*/_jsx("p", {
+              className: "text-sm text-stone-700 mb-1",
+              children: "其他想法（選填）"
+            }), /*#__PURE__*/_jsx("textarea", {
+              value: fb.comment,
+              onChange: e => setFb(s => ({
+                ...s,
+                comment: e.target.value
+              })),
+              rows: 3,
+              className: "w-full border border-stone-300 rounded-xl px-3 py-2 text-sm mb-3",
+              placeholder: "哪裡看不懂？少了什麼？"
+            }), /*#__PURE__*/_jsx("button", {
+              onClick: submitFeedback,
+              disabled: fb.sending,
+              className: "w-full py-3 rounded-xl bg-amber-500 text-white font-medium disabled:opacity-60",
+              children: fb.sending ? "送出中…" : "送出回饋"
+            }), /*#__PURE__*/_jsx("p", {
+              className: "text-xs text-stone-400 mt-2",
+              children: "回饋將匿名送至測試表單，不含個資。"
+            })]
+          })]
+        }), /*#__PURE__*/_jsxs("div", {
+          className: "flex gap-2 no-print",
+          children: [/*#__PURE__*/_jsx("button", {
+            onClick: () => setStep(2),
+            className: "px-4 py-3 rounded-xl border border-stone-300 bg-white",
+            children: "上一步"
+          }), /*#__PURE__*/_jsx("button", {
+            onClick: () => window.print(),
+            className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium",
+            children: "列印／存成 PDF"
+          })]
+        })]
+      })]
+    })]
+  });
+}
+function App() {
+  return /*#__PURE__*/_jsx(UI, {});
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
