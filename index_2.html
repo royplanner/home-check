@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>高齡居家環境友善自我評估</title>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const {
+  useState,
+  useMemo
+} = React;
+
+// ─────────────────────────────────────────────────────────────
+// 居家高齡／失智友善自評 — MVP 原型 v2
+// 完整母檔四空間規則(56條) + 模擬標註圖(編號圈選)
+// ─────────────────────────────────────────────────────────────
+
+const FONT = '"Noto Sans TC","PingFang TC","Microsoft JhengHei",sans-serif';
+const COUNTIES = ["臺北市", "新北市", "桃園市", "臺中市", "臺南市", "高雄市", "新竹市", "嘉義市", "彰化縣", "其他縣市"];
+const SPACES = [{
+  key: "bath",
+  name: "浴室"
+}, {
+  key: "bed",
+  name: "臥室"
+}, {
+  key: "kit",
+  name: "廚房"
+}, {
+  key: "liv",
+  name: "客廳（含樓梯走廊）"
+}];
+
+// 完整規則庫（自母檔讀回）
+const RULES = {
+  "bath": [{
+    "id": "BR-01",
+    "item": "馬桶側L型扶手",
+    "tags": ["MOB-4", "MOB-2", "ADL-1"],
+    "code": "C",
+    "risk": "高",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·馬桶扶手",
+    "why": "馬桶旁建議加裝L型扶手並選對比色，起身更穩。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-1"
+  }, {
+    "id": "BR-02",
+    "item": "淋浴/浴缸抓握扶手",
+    "tags": ["MOB-2", "MOB-3", "MOB-6"],
+    "code": "C",
+    "risk": "高",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·淋浴扶手",
+    "why": "淋浴區建議加裝防滑扶手，洗澡更安全。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-2"
+  }, {
+    "id": "BR-03",
+    "item": "面盆安全扶手",
+    "tags": ["MOB-2", "MOB-5"],
+    "code": "C",
+    "risk": "中",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·面盆扶手",
+    "why": "面盆旁加裝扶手可避免重壓面盆破裂。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-3"
+  }, {
+    "id": "BR-04",
+    "item": "地面防滑",
+    "tags": ["全體", "VIS-2", "MOB-3"],
+    "code": "C",
+    "risk": "高",
+    "triage": "②採購／③工班·轉介",
+    "subsidy": "居家無障礙改善·防滑施工",
+    "why": "建議做防滑處理或鋪固定式防滑墊。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-4"
+  }, {
+    "id": "BR-05",
+    "item": "出入口零門檻·高低差",
+    "tags": ["MOB-2", "MOB-3", "BPSD-FAL", "DEM"],
+    "code": "A／C",
+    "risk": "高",
+    "triage": "①免費(貼對比條)／③工班·轉介(剷除)",
+    "subsidy": "居家無障礙改善·門檻剔除/斜坡板",
+    "why": "門檻是跌倒主因；建議剷平或貼對比色提醒。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-5"
+  }, {
+    "id": "BR-06",
+    "item": "門型與門寬",
+    "tags": ["MOB-2", "MOB-5"],
+    "code": "C",
+    "risk": "中",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·門寬拓寬/改橫拉門",
+    "why": "改橫拉門可省空間並利進出。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-6"
+  }, {
+    "id": "BR-07",
+    "item": "淋浴座椅",
+    "tags": ["MOB-6", "ADL-1"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購／③輔具補助",
+    "subsidy": "輔具·洗澡椅",
+    "why": "建議備穩固洗澡椅，避免久站跌倒。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-7"
+  }, {
+    "id": "BR-08",
+    "item": "馬桶高度",
+    "tags": ["MOB-4"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": "輔具·增高便座",
+    "why": "可加增高便座降低起身負擔。",
+    "callout": "浴-8"
+  }, {
+    "id": "BR-09",
+    "item": "緊急對外求助",
+    "tags": ["LIV-ALONE", "DEM", "ADL-2"],
+    "code": "A",
+    "risk": "高",
+    "triage": "②採購／③",
+    "subsidy": "2026/7起·安全看視類租賃",
+    "why": "獨居或失智者建議裝緊急求助鈕(含低位)。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-9"
+  }, {
+    "id": "BR-10",
+    "item": "照明·感應夜燈",
+    "tags": ["VIS-2", "DEM", "BPSD-SUN"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "加裝感應夜燈，夜間如廁不摸黑。",
+    "callout": "浴-10"
+  }, {
+    "id": "BR-11",
+    "item": "色彩對比·潔具辨識",
+    "tags": ["VIS-2", "DEM", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "換對比色馬桶座墊，幫助辨識降低意外。",
+    "callout": "浴-11"
+  }, {
+    "id": "BR-12",
+    "item": "輪椅迴轉空間",
+    "tags": ["MOB-5"],
+    "code": "C",
+    "risk": "中",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·動線",
+    "why": "空間不足者建議調整動線。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-12"
+  }, {
+    "id": "BR-13",
+    "item": "手持可調花灑/桿式龍頭",
+    "tags": ["MOB-2", "VIS-2"],
+    "code": "B",
+    "risk": "低",
+    "triage": "①／②採購",
+    "subsidy": null,
+    "why": "換手持花灑與桿式龍頭，使用更省力。",
+    "callout": "浴-13"
+  }, {
+    "id": "BR-14",
+    "item": "電器安全·動線雜物",
+    "tags": ["全體", "COG-2", "BPSD-FAL"],
+    "code": "A／C",
+    "risk": "中",
+    "triage": "①免費／③工班·轉介",
+    "subsidy": null,
+    "why": "移除濕區電器、清走道雜物可降低意外。",
+    "callout": "浴-14"
+  }, {
+    "id": "BR-15",
+    "item": "門把與門框可辨識",
+    "tags": ["DEM", "VIS-2", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費(貼/漆)",
+    "subsidy": null,
+    "why": "門把門框用對比色，較易辨識進出。",
+    "callout": "浴-15"
+  }, {
+    "id": "BR-16",
+    "item": "找得到廁所·圖示標示",
+    "tags": ["DEM", "COG-2", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "在動線貼廁所圖示，減少來不及如廁。",
+    "callout": "浴-16"
+  }, {
+    "id": "BR-17",
+    "item": "乾濕分離·地面乾燥",
+    "tags": ["全體", "MOB-3"],
+    "code": "C",
+    "risk": "中",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善",
+    "why": "建議乾濕分離或改善排水保持地面乾燥。（補助以照管中心核定為準·撥1966）",
+    "callout": "浴-17"
+  }],
+  "bed": [{
+    "id": "BD-01",
+    "item": "床側扶手/穩固撐扶物",
+    "tags": ["MOB-4", "MOB-2", "ADL-1"],
+    "code": "C",
+    "risk": "高",
+    "triage": "③工班·轉介／②採購",
+    "subsidy": "輔具·床側扶手",
+    "why": "床邊加裝扶手，上下床更安全。（補助以照管中心核定為準·撥1966）",
+    "callout": "臥-1"
+  }, {
+    "id": "BD-02",
+    "item": "感應小夜燈(床→廁所動線)",
+    "tags": ["VIS-2", "DEM", "BPSD-SUN", "LIV-ALONE"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "床到廁所裝感應夜燈，夜起不跌倒。",
+    "callout": "臥-2"
+  }, {
+    "id": "BD-03",
+    "item": "個人/親友照片·熟悉家具",
+    "tags": ["DEM", "BPSD-AGI"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "擺放熟悉照片與物件，安定情緒、助回憶。",
+    "callout": "臥-3"
+  }, {
+    "id": "BD-04",
+    "item": "開關/插座可辨識",
+    "tags": ["VIS-2", "COG-2", "DEM"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "開關貼螢光標示，夜間好找好辨。",
+    "callout": "臥-4"
+  }, {
+    "id": "BD-05",
+    "item": "開關/插座可操作且高度適當",
+    "tags": ["MOB-2", "VIS-2"],
+    "code": "B",
+    "risk": "低",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "改翹板開關、調整高度更好操作。",
+    "callout": "臥-5"
+  }, {
+    "id": "BD-06",
+    "item": "鏡中人可辨識",
+    "tags": ["DEM-2", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "若認不得鏡中人，可用布遮蓋鏡面以免不安。",
+    "callout": "臥-6"
+  }, {
+    "id": "BD-07",
+    "item": "窗簾素面不反光·遮光",
+    "tags": ["DEM", "BPSD-SUN", "VIS-2"],
+    "code": "B",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "換素面窗簾並可遮光，減少黃昏混亂。",
+    "callout": "臥-7"
+  }, {
+    "id": "BD-08",
+    "item": "個人物品固定收納處",
+    "tags": ["COG-2", "DEM"],
+    "code": "B",
+    "risk": "低",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "常用物固定放置，減少遍尋與焦慮。",
+    "callout": "臥-8"
+  }, {
+    "id": "BD-09",
+    "item": "地板/牆/門顏色對比",
+    "tags": ["VIS-2", "DEM", "BPSD-MIS"],
+    "code": "B",
+    "risk": "中",
+    "triage": "②採購／③",
+    "subsidy": null,
+    "why": "地牆門做顏色對比，較易辨識空間邊界。",
+    "callout": "臥-9"
+  }, {
+    "id": "BD-10",
+    "item": "動線無電線·無雜物",
+    "tags": ["MOB-3", "VIS-2", "BPSD-FAL"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "清走道與電線，避免夜間絆倒。",
+    "callout": "臥-10"
+  }, {
+    "id": "BD-11",
+    "item": "床高度適中",
+    "tags": ["MOB-4"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "調整床高，起身更省力。",
+    "callout": "臥-11"
+  }, {
+    "id": "BD-12",
+    "item": "對外求助/電話可及",
+    "tags": ["LIV-ALONE", "HEAR-2"],
+    "code": "B",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "床邊備可及的電話或求助鈕。",
+    "callout": "臥-12"
+  }],
+  "kit": [{
+    "id": "KT-01",
+    "item": "危險器具收納(刀具)",
+    "tags": ["BPSD-FAL", "DEM", "COG-2"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "刀具等收進有鎖櫥櫃，避免誤用受傷。",
+    "callout": "廚-1"
+  }, {
+    "id": "KT-02",
+    "item": "瓦斯安全·定時關火/改IH",
+    "tags": ["BPSD-FAL", "COG-2", "DEM"],
+    "code": "A",
+    "risk": "高",
+    "triage": "②採購／③工班·轉介",
+    "subsidy": null,
+    "why": "加裝瓦斯定時開關或改IH爐，防忘記關火。（補助以照管中心核定為準·撥1966）",
+    "callout": "廚-2"
+  }, {
+    "id": "KT-03",
+    "item": "煙霧偵測器",
+    "tags": ["全體", "DEM"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①／②採購",
+    "subsidy": null,
+    "why": "裝設煙霧偵測器，火災早警示。",
+    "callout": "廚-3"
+  }, {
+    "id": "KT-04",
+    "item": "櫥櫃內物可辨識正確拿取",
+    "tags": ["COG-2", "DEM", "VIS-2"],
+    "code": "B",
+    "risk": "中",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "改開放式或貼標示，較易找到正確物品。",
+    "callout": "廚-4"
+  }, {
+    "id": "KT-05",
+    "item": "使用慣用水壺餐具",
+    "tags": ["DEM"],
+    "code": "B",
+    "risk": "低",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "沿用熟悉餐具，降低操作困惑。",
+    "callout": "廚-5"
+  }, {
+    "id": "KT-06",
+    "item": "檯面/地面照明充足無眩光",
+    "tags": ["VIS-2", "DEM"],
+    "code": "B",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "加強檯面照明，作業更安全。",
+    "callout": "廚-6"
+  }, {
+    "id": "KT-07",
+    "item": "地面防滑",
+    "tags": ["全體", "MOB-3"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購／③",
+    "subsidy": "居家無障礙改善·防滑",
+    "why": "廚房地面做防滑，避免滑倒。（補助以照管中心核定為準·撥1966）",
+    "callout": "廚-7"
+  }, {
+    "id": "KT-08",
+    "item": "動線無雜物·無電線",
+    "tags": ["MOB-3", "BPSD-FAL"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "清走道與電線，避免絆倒。",
+    "callout": "廚-8"
+  }],
+  "liv": [{
+    "id": "LR-01",
+    "item": "出入口/室內門檻辨識或剷平",
+    "tags": ["DEM", "VIS-2", "MOB-3", "BPSD-FAL"],
+    "code": "A／C",
+    "risk": "高",
+    "triage": "①免費(對比條)／③工班·轉介",
+    "subsidy": "居家無障礙改善·門檻剔除",
+    "why": "門檻貼對比色或剷平，避免絆倒。（補助以照管中心核定為準·撥1966）",
+    "callout": "廳-1"
+  }, {
+    "id": "LR-02",
+    "item": "家具與牆地對比·不反光",
+    "tags": ["VIS-2", "DEM", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "家具選對比不反光色，較易辨識。",
+    "callout": "廳-2"
+  }, {
+    "id": "LR-03",
+    "item": "光線充足·無陰影·不眩光",
+    "tags": ["VIS-2", "DEM", "BPSD-SUN"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "補足照明、減陰影眩光。",
+    "callout": "廳-3"
+  }, {
+    "id": "LR-04",
+    "item": "開放式櫥櫃易見內部",
+    "tags": ["COG-2", "DEM"],
+    "code": "A",
+    "risk": "低",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "改開放式櫥櫃，物品一目了然。",
+    "callout": "廳-4"
+  }, {
+    "id": "LR-05",
+    "item": "個人照片·喜愛作品家具",
+    "tags": ["DEM", "BPSD-AGI"],
+    "code": "A",
+    "risk": "低",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "擺放熟悉物件，安定情緒助回憶。",
+    "callout": "廳-5"
+  }, {
+    "id": "LR-06",
+    "item": "大字時鐘＋日曆(定向)",
+    "tags": ["COG-2", "DEM"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "放大字時鐘與日曆，協助時間定向。",
+    "callout": "廳-6"
+  }, {
+    "id": "LR-07",
+    "item": "行走動線無電線·無雜物",
+    "tags": ["MOB-3", "VIS-2", "BPSD-FAL"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "清動線與電線，降低跌倒。",
+    "callout": "廳-7"
+  }, {
+    "id": "LR-08",
+    "item": "透明玻璃門/窗加標示",
+    "tags": ["DEM", "VIS-2", "BPSD-MIS"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "玻璃門窗貼霧面/標示，防誤撞。",
+    "callout": "廳-8"
+  }, {
+    "id": "LR-09",
+    "item": "刺激管理·降噪",
+    "tags": ["BPSD-AGI", "DEM", "HEAR-2"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "減少不必要噪音，降低躁動。",
+    "callout": "廳-9"
+  }, {
+    "id": "LR-10",
+    "item": "座椅有扶手·高度適合·起身支撐",
+    "tags": ["MOB-4", "ADL-1"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購／③輔具",
+    "subsidy": "輔具·有扶手座椅",
+    "why": "換有扶手適高座椅，起身更穩。（補助以照管中心核定為準·撥1966）",
+    "callout": "廳-10"
+  }, {
+    "id": "LR-11",
+    "item": "家具尖銳角防護",
+    "tags": ["BPSD-FAL", "全體"],
+    "code": "C",
+    "risk": "中",
+    "triage": "①／②採購",
+    "subsidy": null,
+    "why": "家具尖角加防護套，避免撞傷。",
+    "callout": "廳-11"
+  }, {
+    "id": "LR-12",
+    "item": "高大家具固定於牆",
+    "tags": ["全體"],
+    "code": "B",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "高家具固定於牆，防傾倒。",
+    "callout": "廳-12"
+  }, {
+    "id": "LR-13",
+    "item": "樓梯間/走道照明充足",
+    "tags": ["VIS-2", "DEM"],
+    "code": "A",
+    "risk": "中",
+    "triage": "②採購",
+    "subsidy": null,
+    "why": "樓梯走道補足照明。",
+    "callout": "廳-13"
+  }, {
+    "id": "LR-14",
+    "item": "階梯邊緣可辨識",
+    "tags": ["VIS-2", "DEM", "MOB-3"],
+    "code": "A",
+    "risk": "高",
+    "triage": "①／②採購",
+    "subsidy": null,
+    "why": "階梯邊緣貼對比止滑條，看清每一階。",
+    "callout": "廳-14"
+  }, {
+    "id": "LR-15",
+    "item": "走廊/大廳/電梯方向可辨識",
+    "tags": ["DEM", "BPSD-MIS", "COG-2"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費／②採購",
+    "subsidy": null,
+    "why": "主要方向加標示，減少迷路。",
+    "callout": "廳-15"
+  }, {
+    "id": "LR-16",
+    "item": "階梯表面防滑",
+    "tags": ["MOB-3", "全體"],
+    "code": "C",
+    "risk": "高",
+    "triage": "②採購／③",
+    "subsidy": "居家無障礙改善·防滑",
+    "why": "階梯做防滑處理。（補助以照管中心核定為準·撥1966）",
+    "callout": "廳-16"
+  }, {
+    "id": "LR-17",
+    "item": "樓梯間無堆積雜物",
+    "tags": ["MOB-3", "BPSD-FAL"],
+    "code": "A",
+    "risk": "中",
+    "triage": "①免費",
+    "subsidy": null,
+    "why": "清空樓梯雜物，避免絆倒。",
+    "callout": "廳-17"
+  }, {
+    "id": "LR-18",
+    "item": "樓梯雙側穩固扶手",
+    "tags": ["MOB-2", "MOB-3"],
+    "code": "C",
+    "risk": "高",
+    "triage": "③工班·轉介",
+    "subsidy": "居家無障礙改善·扶手",
+    "why": "樓梯建議雙側裝穩固扶手。（補助以照管中心核定為準·撥1966）",
+    "callout": "廳-18"
+  }, {
+    "id": "LR-19",
+    "item": "騎樓/室外通道防滑",
+    "tags": ["全體", "MOB-3"],
+    "code": "C",
+    "risk": "中",
+    "triage": "②採購／③",
+    "subsidy": "居家無障礙改善·防滑",
+    "why": "騎樓與室外通道做防滑。（補助以照管中心核定為準·撥1966）",
+    "callout": "廳-19"
+  }]
+};
+
+// 標註圖：各規則在示意圖上的座標
+const POS = {
+  "BR-01": [222, 118],
+  "BR-02": [250, 68],
+  "BR-03": [92, 72],
+  "BR-04": [150, 158],
+  "BR-05": [40, 150],
+  "BR-06": [33, 118],
+  "BR-07": [236, 92],
+  "BR-08": [210, 132],
+  "BR-09": [258, 128],
+  "BR-10": [150, 35],
+  "BR-11": [198, 108],
+  "BR-12": [112, 150],
+  "BR-13": [266, 52],
+  "BR-14": [70, 108],
+  "BR-15": [52, 100],
+  "BR-16": [78, 72],
+  "BR-17": [210, 162],
+  "BD-01": [92, 138],
+  "BD-02": [48, 150],
+  "BD-03": [205, 55],
+  "BD-04": [40, 95],
+  "BD-05": [60, 88],
+  "BD-06": [250, 88],
+  "BD-07": [155, 38],
+  "BD-08": [212, 128],
+  "BD-09": [33, 118],
+  "BD-10": [150, 165],
+  "BD-11": [140, 150],
+  "BD-12": [218, 138],
+  "KT-01": [88, 72],
+  "KT-02": [180, 74],
+  "KT-03": [150, 35],
+  "KT-04": [105, 48],
+  "KT-05": [232, 80],
+  "KT-06": [190, 50],
+  "KT-07": [150, 158],
+  "KT-08": [90, 150],
+  "LR-01": [40, 150],
+  "LR-02": [100, 135],
+  "LR-03": [165, 38],
+  "LR-04": [232, 68],
+  "LR-05": [205, 52],
+  "LR-06": [140, 42],
+  "LR-07": [105, 165],
+  "LR-08": [180, 52],
+  "LR-09": [88, 70],
+  "LR-10": [125, 118],
+  "LR-11": [148, 150],
+  "LR-12": [235, 90],
+  "LR-13": [268, 58],
+  "LR-14": [264, 110],
+  "LR-15": [58, 100],
+  "LR-16": [272, 140],
+  "LR-17": [256, 150],
+  "LR-18": [248, 88],
+  "LR-19": [30, 172]
+};
+const riskHex = r => r === "高" ? "#f43f5e" : r === "中" ? "#f59e0b" : "#10b981";
+function Fixtures({
+  space
+}) {
+  const L = (x, y, t) => /*#__PURE__*/React.createElement("text", {
+    x: x,
+    y: y,
+    fontSize: "9",
+    fill: "#78716c",
+    textAnchor: "middle"
+  }, t);
+  const base = /*#__PURE__*/React.createElement("rect", {
+    x: "15",
+    y: "20",
+    width: "270",
+    height: "170",
+    rx: "10",
+    fill: "#fafaf9",
+    stroke: "#d6d3d1",
+    strokeWidth: "1.5"
+  });
+  if (space === "bath") return /*#__PURE__*/React.createElement("g", null, base, /*#__PURE__*/React.createElement("rect", {
+    x: "15",
+    y: "132",
+    width: "11",
+    height: "40",
+    fill: "#e7e5e4",
+    stroke: "#a8a29e"
+  }), L(40, 175, "門"), /*#__PURE__*/React.createElement("rect", {
+    x: "192",
+    y: "103",
+    width: "44",
+    height: "52",
+    rx: "12",
+    fill: "#e0f2fe",
+    stroke: "#7dd3fc"
+  }), L(214, 175, "馬桶"), /*#__PURE__*/React.createElement("rect", {
+    x: "60",
+    y: "56",
+    width: "60",
+    height: "26",
+    rx: "4",
+    fill: "#e0f2fe",
+    stroke: "#7dd3fc"
+  }), L(90, 50, "面盆"), /*#__PURE__*/React.createElement("rect", {
+    x: "215",
+    y: "40",
+    width: "64",
+    height: "56",
+    rx: "4",
+    fill: "#ecfeff",
+    stroke: "#67e8f9",
+    strokeDasharray: "4 3"
+  }), L(247, 36, "淋浴"));
+  if (space === "bed") return /*#__PURE__*/React.createElement("g", null, base, /*#__PURE__*/React.createElement("rect", {
+    x: "70",
+    y: "118",
+    width: "120",
+    height: "62",
+    rx: "8",
+    fill: "#ede9fe",
+    stroke: "#c4b5fd"
+  }), L(130, 152, "床"), /*#__PURE__*/React.createElement("rect", {
+    x: "120",
+    y: "22",
+    width: "72",
+    height: "11",
+    fill: "#e0f2fe",
+    stroke: "#7dd3fc"
+  }), L(156, 18, "窗"), /*#__PURE__*/React.createElement("rect", {
+    x: "15",
+    y: "108",
+    width: "11",
+    height: "40",
+    fill: "#e7e5e4",
+    stroke: "#a8a29e"
+  }), L(40, 175, "門"), /*#__PURE__*/React.createElement("rect", {
+    x: "200",
+    y: "116",
+    width: "32",
+    height: "30",
+    rx: "3",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "246",
+    y: "70",
+    width: "9",
+    height: "40",
+    fill: "#e0f2fe",
+    stroke: "#7dd3fc"
+  }), L(250, 124, "鏡"));
+  if (space === "kit") return /*#__PURE__*/React.createElement("g", null, base, /*#__PURE__*/React.createElement("rect", {
+    x: "40",
+    y: "60",
+    width: "222",
+    height: "30",
+    rx: "4",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), L(150, 105, "流理台"), /*#__PURE__*/React.createElement("rect", {
+    x: "160",
+    y: "62",
+    width: "40",
+    height: "26",
+    rx: "3",
+    fill: "#fee2e2",
+    stroke: "#fca5a5"
+  }), L(180, 100, "爐"), /*#__PURE__*/React.createElement("rect", {
+    x: "62",
+    y: "40",
+    width: "90",
+    height: "16",
+    rx: "3",
+    fill: "#ede9fe",
+    stroke: "#c4b5fd"
+  }), L(107, 36, "櫥櫃"));
+  return /*#__PURE__*/React.createElement("g", null, base, /*#__PURE__*/React.createElement("rect", {
+    x: "55",
+    y: "112",
+    width: "92",
+    height: "42",
+    rx: "8",
+    fill: "#ede9fe",
+    stroke: "#c4b5fd"
+  }), L(101, 137, "沙發"), /*#__PURE__*/React.createElement("rect", {
+    x: "60",
+    y: "55",
+    width: "55",
+    height: "9",
+    fill: "#44403c"
+  }), L(87, 50, "電視"), /*#__PURE__*/React.createElement("rect", {
+    x: "138",
+    y: "22",
+    width: "60",
+    height: "11",
+    fill: "#e0f2fe",
+    stroke: "#7dd3fc"
+  }), L(168, 18, "窗"), /*#__PURE__*/React.createElement("rect", {
+    x: "15",
+    y: "135",
+    width: "11",
+    height: "40",
+    fill: "#e7e5e4",
+    stroke: "#a8a29e"
+  }), L(40, 178, "門"), /*#__PURE__*/React.createElement("rect", {
+    x: "118",
+    y: "144",
+    width: "52",
+    height: "20",
+    rx: "4",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "248",
+    y: "150",
+    width: "38",
+    height: "12",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "255",
+    y: "130",
+    width: "31",
+    height: "12",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "262",
+    y: "110",
+    width: "24",
+    height: "12",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), /*#__PURE__*/React.createElement("rect", {
+    x: "269",
+    y: "90",
+    width: "17",
+    height: "12",
+    fill: "#f5f5f4",
+    stroke: "#d6d3d1"
+  }), L(266, 78, "樓梯"));
+}
+function RoomDiagram({
+  space,
+  findings
+}) {
+  return /*#__PURE__*/React.createElement("svg", {
+    viewBox: "0 0 300 200",
+    style: {
+      width: "100%",
+      fontFamily: FONT
+    }
+  }, /*#__PURE__*/React.createElement(Fixtures, {
+    space: space
+  }), findings.map((r, i) => {
+    const [x, y] = POS[r.id] || [150, 100];
+    return /*#__PURE__*/React.createElement("g", {
+      key: r.id
+    }, /*#__PURE__*/React.createElement("circle", {
+      cx: x,
+      cy: y,
+      r: "11",
+      fill: riskHex(r.risk),
+      stroke: "#fff",
+      strokeWidth: "2"
+    }), /*#__PURE__*/React.createElement("text", {
+      x: x,
+      y: y,
+      dy: "4",
+      textAnchor: "middle",
+      fontSize: "12",
+      fontWeight: "700",
+      fill: "#fff"
+    }, i + 1));
+  }));
+}
+function deriveProfile(a) {
+  const p = new Set();
+  const walk = {
+    自如: "MOB-1",
+    需扶牆家具: "MOB-2",
+    拐杖助行器: "MOB-2",
+    輪椅: "MOB-5",
+    幾乎臥床: "MOB-7"
+  };
+  if (a.walk) p.add(walk[a.walk]);
+  if (a.fall?.length && !a.fall.includes("否")) p.add("MOB-3");
+  if (a.fall?.includes("上下床起身無力") || a.fall?.includes("上下床無扶手")) p.add("MOB-4");
+  if (a.rise === "有點" || a.rise === "需協助") p.add("MOB-4");
+  if (a.toilet === "找不到廁所") p.add("BPSD-MIS");
+  if (a.toilet === "疾病或行動") p.add("ADL-1");
+  if (a.vision === "需更亮或略糊") p.add("VIS-2");
+  if (a.vision === "看不清") {
+    p.add("VIS-3");
+    p.add("VIS-2");
+  }
+  if (a.adl === "部分需協助") p.add("ADL-1");
+  if (a.adl === "完全依賴") {
+    p.add("ADL-2");
+    p.add("ADL-1");
+  }
+  if (a.dementia === "已確診") {
+    p.add("DEM-2");
+    p.add("DEM");
+    p.add("COG-2");
+  } else if (a.dementia === "疑似或檢查中") {
+    p.add("DEM-1");
+    p.add("DEM");
+    p.add("COG-2");
+  }
+  (a.bpsd || []).forEach(b => p.add(b));
+  if (a.alone === "白天獨處" || a.alone === "獨居") p.add("LIV-ALONE");
+  if (a.kitchen?.length && !a.kitchen.includes("否")) p.add("BPSD-FAL");
+  return p;
+}
+function boostedSpaces(a) {
+  const s = new Set();
+  (a.fall || []).forEach(f => {
+    if (f.includes("浴廁")) s.add("bath");
+    if (f.includes("出入口")) s.add("liv");
+    if (f.includes("上下床")) s.add("bed");
+  });
+  if (a.toilet && a.toilet !== "否") s.add("bath");
+  if (a.kitchen?.length && !a.kitchen.includes("否")) s.add("kit");
+  return s;
+}
+const QMAP = {
+  "BR-01": "馬桶側是否已安裝 L 型扶手（且與牆面顏色明顯對比）？",
+  "BR-02": "淋浴或浴缸區是否已安裝防滑抓握扶手？",
+  "BR-03": "面盆旁是否已安裝安全扶手？",
+  "BR-04": "浴室地面是否已做防滑處理或鋪固定式防滑墊？",
+  "BR-05": "浴室出入口是否已做到零門檻、無高低差（或以對比色明顯標示）？",
+  "BR-06": "浴室門是否為好進出的橫拉門、且門寬足夠？",
+  "BR-07": "淋浴時是否有穩固可坐的洗澡椅？",
+  "BR-08": "馬桶高度是否適中、起身不會太吃力？",
+  "BR-09": "浴室是否設有緊急對外求助鈕（含跌倒時可及的低位）？",
+  "BR-10": "浴室夜間是否有感應夜燈、照明充足？",
+  "BR-11": "馬桶、牆面、地面的顏色是否有明顯對比、容易辨識？",
+  "BR-12": "浴室是否有足夠的輪椅迴轉空間？",
+  "BR-13": "是否使用可調高度的手持花灑與好操作的桿式水龍頭？",
+  "BR-14": "浴室濕區是否已移除電器、走道保持淨空？",
+  "BR-15": "浴室門把與門框是否以對比色凸顯、容易辨識？",
+  "BR-16": "動線上是否有清楚的廁所指示標示、長輩找得到廁所？",
+  "BR-17": "浴室是否乾濕分離、地面保持乾燥？",
+  "BD-01": "床邊是否有扶手或穩固可撐扶的物體？",
+  "BD-02": "從床到廁所的動線是否有感應夜燈？",
+  "BD-03": "房內是否擺放個人或親友照片、熟悉的物件？",
+  "BD-04": "電燈開關與插座是否容易辨識（有標示或對比色）？",
+  "BD-05": "電燈開關與插座是否好操作、高度適當？",
+  "BD-06": "若長輩認不得鏡中自己，鏡子是否已用布遮蓋？",
+  "BD-07": "窗簾是否為素面不反光、且能在黃昏遮光？",
+  "BD-08": "個人常用物品是否有固定好找的收納位置？",
+  "BD-09": "地板、牆面與門的顏色是否有明顯對比？",
+  "BD-10": "床邊與走道是否無電線、無雜物？",
+  "BD-11": "床的高度是否適中、方便起身？",
+  "BD-12": "床邊是否有可及的電話或求助裝置？",
+  "KT-01": "刀具等危險器具是否收於有安全鎖的櫥櫃或不外露？",
+  "KT-02": "瓦斯爐是否有定時關火安全裝置，或已改用 IH 爐？",
+  "KT-03": "廚房是否裝設可運作的煙霧偵測器？",
+  "KT-04": "櫥櫃內物品是否容易辨識、正確拿取（開放式或有標示）？",
+  "KT-05": "是否使用長輩慣用、熟悉的水壺與餐具？",
+  "KT-06": "廚房檯面與地面照明是否充足、無眩光？",
+  "KT-07": "廚房地面是否已做防滑處理？",
+  "KT-08": "廚房走道是否無雜物、無電線絆腳？",
+  "LR-01": "客廳出入口或室內門檻是否已辨識標示或剷平？",
+  "LR-02": "家具顏色是否與牆面、地板有對比且不反光？",
+  "LR-03": "客廳光線是否充足、無陰影、不刺眼？",
+  "LR-04": "是否採用開放式櫥櫃、內部物品易見？",
+  "LR-05": "是否擺放個人照片、喜愛的作品或熟悉家具？",
+  "LR-06": "是否放置大字時鐘與日曆、幫助長輩掌握時間？",
+  "LR-07": "行走動線是否無電線、無雜物？",
+  "LR-08": "大片透明玻璃門或窗是否已加霧面貼或標示、避免誤撞？",
+  "LR-09": "是否減少不必要的噪音刺激（例如不看電視就關）？",
+  "LR-10": "座椅是否有扶手、高度適合、起身時有穩固支撐？",
+  "LR-11": "家具尖銳角是否已加裝防護套？",
+  "LR-12": "高大家具是否已固定於牆、避免傾倒？",
+  "LR-13": "樓梯間與走道照明是否充足？",
+  "LR-14": "每一階梯邊緣是否清楚可辨（例如貼對比止滑條）？",
+  "LR-15": "走廊、大廳、電梯等方向是否有清楚標示？",
+  "LR-16": "階梯表面是否已做防滑？",
+  "LR-17": "樓梯與樓梯間是否無堆積雜物？",
+  "LR-18": "樓梯是否兩側都裝有穩固扶手？",
+  "LR-19": "騎樓或室外通道是否已做防滑？"
+};
+const tagMatch = (r, p) => r.tags.some(t => t === "全體" || p.has(t));
+const RISK_ORDER = {
+  高: 0,
+  中: 1,
+  低: 2
+};
+const codeRank = c => c.startsWith("A") ? 0 : c.startsWith("B") ? 1 : 2;
+const cleanWhy = r => r.subsidy ? r.why.replace("（補助以照管中心核定為準·撥1966）", "") : r.why;
+const REPORT_TITLE = "高齡居家環境友善自我評估報告";
+const DISCLAIMER = "本報告為居家環境友善自我評估之用，非醫療診斷、非長照官方評估報告書；補助項目與額度以各縣市照管中心核定為準。若對長輩健康有疑慮，請洽醫師或撥 1966。";
+const LINE_CTA = "如需進一步環境改善資源或諮詢，請加入盤古銀髮官方 LINE";
+const LOGO_SRC = "data:image/png;base64,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";
+const LINE_QR_SRC = "data:image/png;base64,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";
+
+// 名單收集（Google 表單）：建立表單後，把 formResponse 網址與各欄 entry 編號填入。
+// 完全不需 Google 授權；未填則「送出」自動改為下載。
+const FORM = {
+  actionUrl: "https://docs.google.com/forms/d/e/1FAIpQLScpz2xovK1jPP6SJhq7bLnwRYupGxDcVPrNf0hvjn8jJngN_g/formResponse",
+  // 例：https://docs.google.com/forms/d/e/XXXX/formResponse
+  entries: {
+    email: "entry.140350182",
+    county: "entry.130995677",
+    profile: "entry.1660401677",
+    counts: "entry.200545417",
+    highRisk: "entry.916753994"
+  }
+};
+function UI() {
+  const [step, setStep] = useState(0);
+  const [agree, setAgree] = useState(false);
+  const [a, setA] = useState({
+    fall: [],
+    bpsd: [],
+    kitchen: []
+  });
+  const [county, setCounty] = useState("");
+  const [confirms, setConfirms] = useState({});
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("");
+  const profile = useMemo(() => deriveProfile(a), [a]);
+  const boosted = useMemo(() => boostedSpaces(a), [a]);
+  const triggered = sk => RULES[sk].filter(r => tagMatch(r, profile));
+  const findings = useMemo(() => {
+    const out = {};
+    SPACES.forEach(({
+      key
+    }) => {
+      out[key] = RULES[key].filter(r => tagMatch(r, profile)).filter(r => confirms[`${key}:${r.id}`] !== "是").sort((x, y) => RISK_ORDER[x.risk] - RISK_ORDER[y.risk] || codeRank(x.code) - codeRank(y.code));
+    });
+    return out;
+  }, [confirms, profile]);
+  const counts = useMemo(() => SPACES.map(s => findings[s.key].length), [findings]);
+  const highTotal = useMemo(() => SPACES.reduce((n, s) => n + findings[s.key].filter(x => x.risk === "高").length, 0), [findings]);
+  const set = (k, v) => setA(s => ({
+    ...s,
+    [k]: v
+  }));
+  const toggle = (k, v) => setA(s => {
+    const c = new Set(s[k] || []);
+    c.has(v) ? c.delete(v) : c.add(v);
+    return {
+      ...s,
+      [k]: [...c]
+    };
+  });
+  function reportHTML() {
+    const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const secs = SPACES.map(({
+      key,
+      name
+    }) => {
+      const f = findings[key];
+      if (!f.length) return '<h3 style="margin:16px 0 4px">' + esc(name) + '</h3><p style="color:#059669;font-size:14px">暫無待改善</p>';
+      const items = f.map((r, i) => {
+        const color = r.risk === "高" ? "#f43f5e" : r.risk === "中" ? "#f59e0b" : "#10b981";
+        const sub = r.subsidy ? '<div style="font-size:12px;color:#0369a1;margin-top:2px">可能符合長照3.0：' + esc(r.subsidy) + '（以照管中心核定為準·撥1966）</div>' : "";
+        return '<div style="display:flex;gap:8px;margin:10px 0"><div style="flex:none;width:22px;height:22px;border-radius:50%;background:' + color + ';color:#fff;text-align:center;line-height:22px;font-size:13px">' + (i + 1) + '</div><div><div style="font-weight:600;font-size:14px;color:#292524">' + esc(QMAP[r.id] || r.item) + '</div><div style="font-size:13px;color:#57534e">' + esc(cleanWhy(r)) + '</div>' + sub + '</div></div>';
+      }).join("");
+      return '<h3 style="margin:18px 0 4px;font-size:16px;color:#292524">' + esc(name) + '　<span style="font-size:12px;color:#a8a29e">' + f.length + ' 項建議</span></h3>' + items;
+    }).join("");
+    return '<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + REPORT_TITLE + '</title></head><body style="font-family:-apple-system,\'PingFang TC\',\'Microsoft JhengHei\',sans-serif;max-width:640px;margin:0 auto;padding:20px;color:#292524;background:#fff">' + '<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;border-bottom:2px solid #f1f5f4;padding-bottom:10px;margin-bottom:10px"><h1 style="color:#0f766e;font-size:19px;margin:0">' + REPORT_TITLE + '</h1><img src="' + LOGO_SRC + '" alt="盤古銀髮" style="height:34px"></div>' + '<p style="color:#78716c;font-size:13px;margin:0 0 8px">所在地區：' + esc(county || "未填") + '　·　申請前自我評估，非官方評估報告書</p>' + secs + '<div style="margin-top:20px;padding:12px;background:#f5f5f4;border-radius:8px;font-size:12px;color:#78716c;line-height:1.7">' + DISCLAIMER + '</div>' + '<div style="margin-top:16px;text-align:center;border-top:1px solid #eee;padding-top:16px"><p style="font-size:13px;color:#57534e;margin:0 0 8px">' + LINE_CTA + '</p><img src="' + LINE_QR_SRC + '" alt="盤古銀髮官方LINE" style="width:150px"></div>' + '</body></html>';
+  }
+  function reportText() {
+    const lines = [REPORT_TITLE, "所在地區：" + (county || "未填"), ""];
+    SPACES.forEach(({
+      key,
+      name
+    }) => {
+      const f = findings[key];
+      if (!f.length) {
+        lines.push("【" + name + "】暫無待改善");
+        return;
+      }
+      lines.push("【" + name + "】" + f.length + " 項建議");
+      f.forEach((r, i) => lines.push(i + 1 + ". " + (QMAP[r.id] || r.item) + "（風險：" + r.risk + "）— " + cleanWhy(r) + (r.subsidy ? " 可能符合長照3.0：" + r.subsidy : "")));
+      lines.push("");
+    });
+    lines.push(DISCLAIMER);
+    lines.push(LINE_CTA);
+    return lines.join("\n");
+  }
+  function submitForm() {
+    if (!FORM.actionUrl || FORM.actionUrl.includes("XXXX")) return Promise.reject("no form");
+    const e = FORM.entries;
+    const body = new URLSearchParams();
+    body.append(e.email, email || "");
+    body.append(e.county, county || "未填");
+    body.append(e.profile, [...profile].join(" ") || "（無）");
+    body.append(e.counts, SPACES.map((s, i) => s.name + ":" + counts[i]).join("、"));
+    body.append(e.highRisk, String(highTotal));
+    return fetch(FORM.actionUrl, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {
+        "Content-Type": "application/x-www-form-urlencoded"
+      },
+      body: body.toString()
+    });
+  }
+  function downloadFile() {
+    try {
+      const blob = new Blob([reportHTML()], {
+        type: "text/html;charset=utf-8"
+      });
+      const url = URL.createObjectURL(blob);
+      const el = document.createElement("a");
+      el.href = url;
+      el.download = "高齡居家環境友善自我評估報告.html";
+      document.body.appendChild(el);
+      el.click();
+      el.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1500);
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+  // 主要動作：下載報告到手機（並在背景把名單送到 Google 表單）
+  function downloadReport() {
+    const ok = downloadFile();
+    submitForm().catch(() => {});
+    setStatus(ok ? "報告已下載到您的裝置，可在「檔案／下載」中開啟。" : "下載失敗，請改用瀏覽器選單的「列印／儲存成 PDF」。");
+  }
+  // 選填：留 Email 給主辦單位後續聯繫（連同摘要送到 Google 表單）
+  function submitEmail() {
+    if (!email || !email.includes("@")) {
+      setStatus("請輸入正確的 Email，或直接按下載報告。");
+      return;
+    }
+    submitForm().then(() => setStatus("已收到您的 Email，我們會再與您聯繫。若還沒下載報告，請按下方按鈕。")).catch(() => setStatus("已記錄。若還沒下載報告，請按下方按鈕。"));
+  }
+  const Radio = ({
+    k,
+    opts
+  }) => /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 mt-2"
+  }, opts.map(o => /*#__PURE__*/React.createElement("button", {
+    key: o,
+    onClick: () => set(k, o),
+    className: "px-3 py-2 rounded-xl border text-sm transition " + (a[k] === o ? "bg-teal-600 border-teal-600 text-white" : "bg-white border-stone-300 text-stone-700 hover:border-teal-400")
+  }, o)));
+  const Multi = ({
+    k,
+    opts
+  }) => /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 mt-2"
+  }, opts.map(o => {
+    const on = (a[k] || []).includes(o);
+    return /*#__PURE__*/React.createElement("button", {
+      key: o,
+      onClick: () => toggle(k, o),
+      className: "px-3 py-2 rounded-xl border text-sm transition " + (on ? "bg-amber-500 border-amber-500 text-white" : "bg-white border-stone-300 text-stone-700 hover:border-amber-400")
+    }, o);
+  }));
+  const Q = ({
+    n,
+    children
+  }) => /*#__PURE__*/React.createElement("div", {
+    className: "mb-5"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "font-medium text-stone-800 leading-relaxed"
+  }, n), children);
+  const Steps = () => /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center gap-1 mb-6 text-xs flex-wrap"
+  }, ["使用說明", "健康自評", "居家空間", "評估報告"].map((s, i) => /*#__PURE__*/React.createElement(React.Fragment, {
+    key: s
+  }, /*#__PURE__*/React.createElement("span", {
+    className: "px-2.5 py-1 rounded-full " + (i === step ? "bg-teal-600 text-white" : i < step ? "bg-teal-100 text-teal-800" : "bg-stone-200 text-stone-500")
+  }, i + 1, ". ", s), i < 3 && /*#__PURE__*/React.createElement("span", {
+    className: "text-stone-300"
+  }, "—"))));
+  const riskDot = r => /*#__PURE__*/React.createElement("span", {
+    className: "inline-block w-2.5 h-2.5 rounded-full",
+    style: {
+      background: riskHex(r)
+    }
+  });
+  const codeChip = c => /*#__PURE__*/React.createElement("span", {
+    className: "text-xs px-1.5 py-0.5 rounded " + (c.startsWith("A") ? "bg-rose-100 text-rose-700" : c.startsWith("B") ? "bg-amber-100 text-amber-800" : "bg-sky-100 text-sky-700")
+  }, c);
+  return /*#__PURE__*/React.createElement("div", {
+    style: {
+      fontFamily: FONT
+    },
+    className: "bg-stone-50 min-h-screen"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "max-w-2xl mx-auto p-4 text-stone-800"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-baseline justify-between mb-1"
+  }, /*#__PURE__*/React.createElement("h1", {
+    className: "text-xl font-semibold text-teal-800"
+  }, "高齡居家環境友善自我評估"), /*#__PURE__*/React.createElement("span", {
+    className: "text-xs text-stone-400"
+  }, "展覽現場版")), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-stone-400 mb-4"
+  }, "為失智家庭設計 · 現場快速居家安全健檢"), /*#__PURE__*/React.createElement(Steps, null), step === 0 && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-lg mb-3"
+  }, "歡迎！三分鐘看懂家裡的風險"), /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3 text-sm text-stone-600 leading-relaxed"
+  }, /*#__PURE__*/React.createElement("p", null, "這份自評專為", /*#__PURE__*/React.createElement("b", {
+    className: "text-stone-800"
+  }, "家中有失智長輩"), "的家庭設計。只要回答幾個簡單問題，就能得到一份為您家長輩量身的居家安全建議，並可用 Email 寄送或下載到手機帶回家。"), /*#__PURE__*/React.createElement("p", null, /*#__PURE__*/React.createElement("b", {
+    className: "text-stone-800"
+  }, "若方便，可先為常用空間拍幾張照片"), "（浴室、臥室、廚房、客廳），現場對照更清楚。"), /*#__PURE__*/React.createElement("div", {
+    className: "bg-amber-50 border border-amber-200 rounded-xl p-3 text-amber-900"
+  }, /*#__PURE__*/React.createElement("b", null, "溫馨提醒："), "本自評為居家環境友善自我評估之用，非醫療診斷，也不能取代長照官方評估。實際補助以各縣市照管中心核定為準，請撥 1966。若對長輩健康有疑慮，請洽醫師。")), /*#__PURE__*/React.createElement("label", {
+    className: "flex items-center gap-2 mt-4 text-sm"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    checked: agree,
+    onChange: e => setAgree(e.target.checked),
+    className: "w-4 h-4 accent-teal-600"
+  }), "我已閱讀並了解上述說明"), /*#__PURE__*/React.createElement("button", {
+    disabled: !agree,
+    onClick: () => setStep(1),
+    className: "mt-4 w-full py-3 rounded-xl font-medium " + (agree ? "bg-teal-600 text-white" : "bg-stone-200 text-stone-400")
+  }, "開始自評")), step === 1 && /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-lg mb-1"
+  }, "第二層 · 健康自評（10 題）"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-stone-400 mb-4"
+  }, "由家屬代填，用於配對居家環境，非診斷。"), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-teal-700 mb-2"
+  }, "過去半年實際狀況"), /*#__PURE__*/React.createElement(Q, {
+    n: "1. 長輩過去半年是否曾經跌倒？（可複選原因）"
+  }, /*#__PURE__*/React.createElement(Multi, {
+    k: "fall",
+    opts: ["浴廁門檻絆倒", "出入口門檻絆倒", "浴廁滑倒無扶手", "上下床起身無力", "上下床無扶手", "其他", "否"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "2. 長輩是否曾來不及上廁所？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "toilet",
+    opts: ["否", "找不到廁所", "疾病或行動"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "3. 廚房是否曾發生不安全事件？（可複選）"
+  }, /*#__PURE__*/React.createElement(Multi, {
+    k: "kitchen",
+    opts: ["忘記關瓦斯", "燙傷", "持刀具傷人", "否"]
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-teal-700 mb-2 mt-6"
+  }, "能力與失智狀況"), /*#__PURE__*/React.createElement(Q, {
+    n: "4. 長輩室內走動的方式是？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "walk",
+    opts: ["自如", "需扶牆家具", "拐杖助行器", "輪椅", "幾乎臥床"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "5. 長輩起身或上下床是否吃力、需要扶手或協助？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "rise",
+    opts: ["不會", "有點", "需協助"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "6. 長輩在一般室內光線下，能否看清物品與臉孔？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "vision",
+    opts: ["清楚", "需更亮或略糊", "看不清"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "7. 長輩日常生活（洗澡、如廁）是否需要他人協助？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "adl",
+    opts: ["可自理", "部分需協助", "完全依賴"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "8. 長輩是否經醫師診斷為失智症？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "dementia",
+    opts: ["否", "疑似或檢查中", "已確診"]
+  })), /*#__PURE__*/React.createElement(Q, {
+    n: "9. 近一個月，長輩是否出現以下情形？（可複選）"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap gap-2 mt-2"
+  }, [["BPSD-WAN", "想往外走或走失"], ["BPSD-SUN", "傍晚特別躁動"], ["BPSD-AGI", "易激動、抗拒"], ["BPSD-MIS", "認不得家人或鏡中自己"], ["BPSD-FAL", "危險警覺明顯下降"]].map(([v, t]) => {
+    const on = (a.bpsd || []).includes(v);
+    return /*#__PURE__*/React.createElement("button", {
+      key: v,
+      onClick: () => toggle("bpsd", v),
+      className: "px-3 py-2 rounded-xl border text-sm " + (on ? "bg-amber-500 border-amber-500 text-white" : "bg-white border-stone-300 hover:border-amber-400")
+    }, t);
+  }))), /*#__PURE__*/React.createElement("p", {
+    className: "font-semibold text-teal-700 mb-2 mt-6"
+  }, "居住情境"), /*#__PURE__*/React.createElement(Q, {
+    n: "10. 長輩白天是否常獨自在家？"
+  }, /*#__PURE__*/React.createElement(Radio, {
+    k: "alone",
+    opts: ["有人常在", "白天獨處", "獨居"]
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2 mt-4"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(0),
+    className: "px-4 py-3 rounded-xl border border-stone-300"
+  }, "上一步"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(2),
+    className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium"
+  }, "下一步：居家空間"))), step === 2 && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-lg mb-1"
+  }, "第三層 · 居家空間現況"), /*#__PURE__*/React.createElement("p", {
+    className: "text-xs text-stone-400 mb-3"
+  }, "以下每一題請依家中實際狀況回答「是／否／不確定」。只列出與這位長輩有關的項目。"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-medium mb-1"
+  }, "房屋所在縣市"), /*#__PURE__*/React.createElement("select", {
+    value: county,
+    onChange: e => setCounty(e.target.value),
+    className: "w-full border border-stone-300 rounded-xl px-3 py-2 text-sm"
+  }, /*#__PURE__*/React.createElement("option", {
+    value: ""
+  }, "請選擇"), COUNTIES.map(c => /*#__PURE__*/React.createElement("option", {
+    key: c
+  }, c)))), SPACES.map(({
+    key,
+    name
+  }) => {
+    const list = triggered(key);
+    const hot = boosted.has(key);
+    return /*#__PURE__*/React.createElement("div", {
+      key: key,
+      className: "bg-white rounded-2xl border border-stone-200 p-5"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center justify-between mb-2"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-semibold"
+    }, name), hot && /*#__PURE__*/React.createElement("span", {
+      className: "text-xs px-2 py-0.5 rounded-full bg-rose-100 text-rose-700"
+    }, "依事件 · 優先檢視")), list.length === 0 ? /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-emerald-600"
+    }, "依目前狀況，此空間暫無需特別檢視。") : /*#__PURE__*/React.createElement("div", {
+      className: "space-y-2 mt-1"
+    }, list.map(r => {
+      const ck = `${key}:${r.id}`;
+      return /*#__PURE__*/React.createElement("div", {
+        key: r.id,
+        className: "border border-stone-200 rounded-xl p-3"
+      }, /*#__PURE__*/React.createElement("div", {
+        className: "flex items-start gap-2"
+      }, /*#__PURE__*/React.createElement("span", {
+        className: "mt-1"
+      }, riskDot(r.risk)), /*#__PURE__*/React.createElement("span", {
+        className: "font-medium text-sm leading-relaxed"
+      }, QMAP[r.id] || r.item)), /*#__PURE__*/React.createElement("div", {
+        className: "flex gap-2 mt-2"
+      }, ["是", "否", "不確定"].map(o => /*#__PURE__*/React.createElement("button", {
+        key: o,
+        onClick: () => setConfirms(c => ({
+          ...c,
+          [ck]: o
+        })),
+        className: "px-4 py-1.5 rounded-lg text-sm border " + (confirms[ck] === o ? o === "是" ? "bg-emerald-500 border-emerald-500 text-white" : "bg-stone-700 border-stone-700 text-white" : "bg-white border-stone-300 text-stone-600")
+      }, o))));
+    })));
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(1),
+    className: "px-4 py-3 rounded-xl border border-stone-300 bg-white"
+  }, "上一步"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(3),
+    className: "flex-1 py-3 rounded-xl bg-teal-600 text-white font-medium"
+  }, "產出評估報告"))), step === 3 && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between gap-3 mb-2 border-b border-stone-100 pb-3"
+  }, /*#__PURE__*/React.createElement("h2", {
+    className: "font-semibold text-lg leading-snug"
+  }, REPORT_TITLE), /*#__PURE__*/React.createElement("img", {
+    src: LOGO_SRC,
+    alt: "盤古銀髮",
+    style: {
+      height: "34px"
+    }
+  })), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-stone-500 mb-3"
+  }, "所在地區：", county || "未填", "\u3000·\u3000申請前自我評估，非官方評估報告書。"), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-2 gap-3"
+  }, SPACES.map(({
+    key,
+    name
+  }) => {
+    const f = findings[key];
+    const high = f.filter(x => x.risk === "高").length;
+    const tone = high ? "bg-rose-50 text-rose-700" : f.length ? "bg-amber-50 text-amber-800" : "bg-emerald-50 text-emerald-700";
+    return /*#__PURE__*/React.createElement("div", {
+      key: key,
+      className: "rounded-xl p-3 " + tone
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-medium text-sm"
+    }, name), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs mt-1"
+    }, f.length ? `${f.length} 項待改善（高風險 ${high}）` : "暫無待改善"));
+  }))), SPACES.map(({
+    key,
+    name
+  }) => {
+    const f = findings[key];
+    if (!f.length) return null;
+    return /*#__PURE__*/React.createElement("div", {
+      key: key,
+      className: "bg-white rounded-2xl border border-stone-200 p-5"
+    }, /*#__PURE__*/React.createElement("h3", {
+      className: "font-semibold mb-3"
+    }, name, "\u3000", /*#__PURE__*/React.createElement("span", {
+      className: "text-xs text-stone-400"
+    }, f.length, " 項建議")), /*#__PURE__*/React.createElement("div", {
+      className: "rounded-xl border border-stone-200 bg-stone-50 p-2 mb-3"
+    }, /*#__PURE__*/React.createElement(RoomDiagram, {
+      space: key,
+      findings: f
+    }), /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-stone-400 text-center mt-1"
+    }, "模擬標註圖：圈號對應下方編號 · 紅高／黃中／綠低風險")), /*#__PURE__*/React.createElement("div", {
+      className: "space-y-3"
+    }, f.map((r, i) => /*#__PURE__*/React.createElement("div", {
+      key: r.id,
+      className: "flex gap-3"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "shrink-0 w-7 h-7 rounded-full text-white text-sm flex items-center justify-center",
+      style: {
+        background: riskHex(r.risk)
+      }
+    }, i + 1), /*#__PURE__*/React.createElement("div", {
+      className: "flex-1"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-center gap-2 flex-wrap"
+    }, /*#__PURE__*/React.createElement("span", {
+      className: "font-medium text-sm"
+    }, QMAP[r.id] || r.item), codeChip(r.code), /*#__PURE__*/React.createElement("span", {
+      className: "text-xs px-1.5 py-0.5 rounded bg-stone-100 text-stone-600"
+    }, r.triage)), /*#__PURE__*/React.createElement("p", {
+      className: "text-sm text-stone-600 mt-1 leading-relaxed"
+    }, cleanWhy(r)), r.subsidy && /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-sky-700 mt-1"
+    }, "可能符合長照 3.0：", r.subsidy, "（以照管中心核定為準 · 撥 1966）"))))));
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-teal-200 p-5"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-semibold mb-2"
+  }, "取得這份報告"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-stone-600 mb-3"
+  }, "直接下載到手機就能帶回家；若願意留 Email，我們可提供後續改善資源與諮詢。"), /*#__PURE__*/React.createElement("button", {
+    onClick: downloadReport,
+    className: "w-full py-3 rounded-xl bg-teal-600 text-white font-medium mb-3"
+  }, "下載報告到手機"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm font-medium text-stone-700 mb-1"
+  }, "留 Email 給我們（選填）"), /*#__PURE__*/React.createElement("input", {
+    type: "email",
+    value: email,
+    onChange: e => setEmail(e.target.value),
+    placeholder: "you@example.com",
+    className: "w-full border border-stone-300 rounded-xl px-3 py-3 text-base mb-2"
+  }), /*#__PURE__*/React.createElement("button", {
+    onClick: submitEmail,
+    className: "w-full py-3 rounded-xl border border-stone-300 bg-white text-stone-700 font-medium"
+  }, "送出 Email 給主辦單位"), status && /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-emerald-600 mt-3"
+  }, status)), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5"
+  }, /*#__PURE__*/React.createElement("h3", {
+    className: "font-semibold mb-2"
+  }, "在地專業服務資源"), /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-stone-600 leading-relaxed"
+  }, county || "您所在縣市", "長期照顧管理中心（撥 1966 轉介）", /*#__PURE__*/React.createElement("br", null), "長照特約輔具／無障礙改善廠商（可採代償墊付，只付自付額）", /*#__PURE__*/React.createElement("br", null), "職能治療所 · 居家安全評估")), /*#__PURE__*/React.createElement("div", {
+    className: "bg-stone-50 border border-stone-200 rounded-xl p-3 text-xs text-stone-500 leading-relaxed"
+  }, DISCLAIMER), /*#__PURE__*/React.createElement("div", {
+    className: "bg-white rounded-2xl border border-stone-200 p-5 text-center"
+  }, /*#__PURE__*/React.createElement("p", {
+    className: "text-sm text-stone-700 mb-3"
+  }, LINE_CTA), /*#__PURE__*/React.createElement("img", {
+    src: LINE_QR_SRC,
+    alt: "盤古銀髮官方 LINE QRcode",
+    style: {
+      width: "160px",
+      margin: "0 auto"
+    }
+  })), /*#__PURE__*/React.createElement("div", {
+    className: "flex gap-2"
+  }, /*#__PURE__*/React.createElement("button", {
+    onClick: () => setStep(2),
+    className: "px-4 py-3 rounded-xl border border-stone-300 bg-white"
+  }, "上一步"), /*#__PURE__*/React.createElement("button", {
+    onClick: () => {
+      setStep(0);
+      setA({
+        fall: [],
+        bpsd: [],
+        kitchen: []
+      });
+      setConfirms({});
+      setCounty("");
+      setEmail("");
+      setStatus("");
+      setAgree(false);
+    },
+    className: "flex-1 py-3 rounded-xl border border-stone-300 bg-white"
+  }, "為下一位訪客重新開始")))));
+}
+function App() {
+  return /*#__PURE__*/React.createElement(UI, null);
+}
+ReactDOM.createRoot(document.getElementById("root")).render(React.createElement(App));
+</script>
+</body>
+</html>
